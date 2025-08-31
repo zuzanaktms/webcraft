@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>web starcraft (defend your base wiht zergs)</title>
+    <meta charset=UTF-8>
+    <link rel="stylesheet" href="starcraft_css_code.css">
+    <link rel="icon" type="image/svg+xml" href="res/favicon.svg">
+  </head>
+  <body oncontextmenu="return true;">
+    <div style="display: flex;">
+      <div>
+      <canvas id="plocha" width="1500" height="1004"></canvas>
+      </div>
+      <div>
+        <h1 id="miner.">minerals:</h1>
+        <h1 id="supply"></h1>
+        <div>
+          <h1 id="drone_name" style="display: none">Drone</h1>
+          <h1 id="drone_lifes" style="display: none">Life:</h1>
+          <button id="build_spool" style="display: none">Morph to spawning pool(S) 150</button> 
+        </div>
+        <div>
+          <h1 id="main_house_name" style="display: none">Hatchery</h1>
+          <h1 id="Hatchery_lifes" style="display: none"></h1>
+          <button id="new_drone_button" style="display: none">new drone(D) 50</button>
+          <button id="more_supply_button" style="display: none ">evolve supply chamber(V) 100</button>
+        </div>
+        <div>
+          <h1 id="minerals_name" style="display: none">Minerals</h1>
+          <h1 id="minerals_kapacita" style="display: none"></h1>
+        </div>
+        <div>
+          <h1 id="spool_name" style="display: none">Spawning pool</h1>
+          <h1 id="spool_life" style="display: none"></h1>
+        </div>
+          <div id="ukazatel_velikosti_units">
+            <div id="ukazatel_casu" width="1%" >
+            </div>
+          </div>
+          <div id="ukazatel_velikosti_upradges">
+            <div id="ukazatel_upradgu" width="1%">
+            </div>
+          </div>
+        <div>
+          <h1 id="no_space" style="display: none">Not space</h1>
+          <h1 id="upradge_complete" style="display: none">Upradge completed</h1>
+          <h1 id="no_minerals" style="display: none" >Not enough minerals.</h1>
+          <h1 id="no_supply" style="display: none">Not enough supply</h1>
+          <h1 id="full_queue" style="display: none">Your queue is full</h1>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="starcraft.js">
+  </script>
+</html>
+

@@ -1,0 +1,77 @@
+#new_drone_button {
+  background-color:#FFFFFF;
+  color: black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition:background-color 0.3s;
+}
+
+#new_drone_button:hover {
+  background-color:#5b5b5b;
+}
+
+#build_spool {
+  background-color:#FFFFFF;
+  color:black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition: background-color 0.3s;
+}
+
+#build_spool:hover {
+  background-color:#5b5b5b;
+}
+
+#more_supply_button {
+  background-color:#FFFFFF;
+  color:black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition: background-color 0.3s;
+}
+
+#more_supply_button:hover {
+  background-color:#5b5b5b;
+}
+
+#ukazatel_casu {
+  text-wrap-mode:nowrap;  
+  background-color:orange;
+  color:black;
+  display:none;
+  width:0%;
+}
+
+#ukazatel_upradgu {
+  text-wrap-mode:nowrap;  
+  background-color:orange;
+  color:black;
+  display:none;
+  width:0%;
+}
+
+#ukazatel_velikosti_units {
+   text-wrap-mode:nowrap;  
+   background-color:grey;
+   color:black;
+   display:none;
+   width:300px;
+}
+
+#ukazatel_velikosti_upradges {
+   text-wrap-mode:nowrap;  
+   background-color:grey;
+   color:black;
+   display:none;
+   width:300px;
+}
+

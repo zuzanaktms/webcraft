@@ -1,4 +1,6 @@
 
+// tohle je pokus
+
 //class structure
 //{{{
 class Structure

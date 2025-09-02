@@ -155,8 +155,8 @@ class Structure
   constructor(x,y)
   {//{{{
     this.am_i_selected = 0;
-    this.rally_point_x = 100;
-    this.rally_point_y = 100;
+    this.rally_point_x = 655;
+    this.rally_point_y = 500;
     this.progress_2 = 0;
     this.progress = 0;
     this.queue_2 = [];

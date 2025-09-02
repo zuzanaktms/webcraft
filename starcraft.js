@@ -1,5 +1,152 @@
+//class units
+/*{{{*/
+class Unit
+{
+  constructor()
+  {/*{{{*/
+    this.velikost = 0;
+    this.x = 0;
+    this.y = 0;
+    this.life = 0;
+    this.id = g_id++;
+    this.am_I_selected = 0;
+    this.speed = 5;
+    this.angle = 0;
+    this.work = "none";
+    this.action = "none";
+    this.x_cil = this.x;
+    this.y_cil = this.y;
+    this.type = "none";
+    units[this.id] = this;
+  }/*}}}*/
 
-// tohle je pokus
+  draw()
+  {/*{{{*/
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.angle/180*Math.PI);
+    
+    if (this.type == "zergling")
+    {
+      if (this.am_I_selected == 1) 
+      {
+        ctx.beginPath();
+        ctx.arc(0, 12, 20, 0,2 * Math.PI);
+        ctx.strokeStyle = "green";
+        ctx.stroke();
+        ctx.strokeStyle = "black";
+      }
+      
+      //body
+      ctx.beginPath();
+      ctx.moveTo(-7,0);
+      ctx.lineTo(-6, -4);
+      ctx.lineTo(-5, -5);
+      ctx.lineTo(-2, -7);
+      ctx.lineTo(2, -7);
+      ctx.lineTo(5, -5);
+      ctx.lineTo(6, -4);
+      ctx.lineTo(7, 0);
+      ctx.moveTo(-7, 0);
+      ctx.lineTo(-5, 25);
+      ctx.lineTo(-3, 26);
+      ctx.lineTo(-2, 28);
+      ctx.lineTo(2, 28);
+      ctx.lineTo(3, 27);
+      ctx.lineTo(5, 25);
+      ctx.lineTo(7, 0);
+      ctx.moveTo(4, 26);
+      ctx.lineTo(3, 32);
+      ctx.lineTo(0, 38);
+      ctx.lineTo(-3, 32);
+      ctx.lineTo(-4, 26);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fillStyle = "purple";
+      ctx.fill();
+
+      //arms
+      ctx.beginPath();
+      ctx.moveTo(-5, -5);
+      ctx.lineTo(-5, -11);
+      ctx.lineTo(-6, -13);
+      ctx.lineTo(-7, -11);
+      ctx.lineTo(-7, -6);
+      ctx.moveTo(5, -5);
+      ctx.lineTo(5, -11);
+      ctx.lineTo(6, -13);
+      ctx.lineTo(7, -11);
+      ctx.lineTo(7, -6);
+      ctx.closePath();
+      ctx.fillStyle = "purple"
+      ctx.fill();
+      ctx.stroke();
+     
+      //left wing
+      ctx.beginPath();
+      ctx.moveTo(-4, -2);
+      ctx.lineTo(-11, 10);
+      ctx.lineTo(-12, 15);
+      ctx.lineTo(-11, 23);
+      ctx.lineTo(-5, 17);
+      ctx.closePath();
+      ctx.fillStyle = "teal"
+      ctx.fill();
+      ctx.stroke();
+      
+      //rigth wing
+      ctx.beginPath();
+      ctx.moveTo(4, -2);
+      ctx.lineTo(11, 10);
+      ctx.lineTo(12, 15);
+      ctx.lineTo(11, 23);
+      ctx.lineTo(5, 17);
+      ctx.closePath();
+      ctx.fillStyle = "teal"
+      ctx.fill();
+      ctx.stroke();
+    }
+    
+    ctx.restore();
+  }/*}}}*/
+
+  akce()
+  {//{{{
+    switch (this.action)
+    {
+    case "none":
+      break;
+    case "move":     
+        const xd = this.x_cil - this.x;
+        const yd = this.y_cil - this.y;
+        const d = Math.sqrt(xd*xd + yd*yd);
+        if (d <= this.speed)
+        {
+          this.x = this.x_cil;
+          this.y = this.y_cil;
+        }
+        else
+        {  
+          this.x += xd/d * this.speed;
+          this.y += yd/d * this.speed;
+
+          let rad_angle = Math.atan2(yd,xd);
+          let deg_angle = rad_angle * 180 / Math.PI;
+          this.angle = 90 + deg_angle;
+        }
+      break;
+    }
+  }//}}}
+
+  move(x,y)
+  {//{{{
+    this.x_cil = x;
+    this.y_cil = y;
+    this.action = "move";
+  }//}}}
+
+}
+/*}}}*/
 
 //class structure
 //{{{
@@ -7,6 +154,9 @@ class Structure
 {
   constructor(x,y)
   {//{{{
+    this.am_i_selected = 0;
+    this.rally_point_x = 100;
+    this.rally_point_y = 100;
     this.progress_2 = 0;
     this.progress = 0;
     this.queue_2 = [];
@@ -18,6 +168,7 @@ class Structure
     this.y = y;
     this.type = 0;
     this.life = 1000;
+    this.stadium = 5;
     this.rotate = Math.floor(Math.random()*360);
   }//}}}
 
@@ -27,6 +178,7 @@ class Structure
     {
       ctx.save();
       ctx.translate(this.x,this.y);
+      
 
 //square(body of house)
       ctx.beginPath();
@@ -36,7 +188,7 @@ class Structure
       ctx.lineTo(-50, 50);
       ctx.lineTo(-50, -50);
       ctx.closePath();
-
+      
       ctx.fillStyle = "purple";
       ctx.fill();
       ctx.stroke();
@@ -110,41 +262,120 @@ class Structure
     }
     if (this.type == "spawn_pool")
     {
-      ctx.save();
-      ctx.translate(this.x,this.y);
-      ctx.moveTo(0,0);
+      if (this.stadium == 100)
+      {
+        spawn_pool_exist = 1;
+
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.moveTo(-75,0);
+        ctx.lineTo(-45,-50);
+        ctx.lineTo(-17,-35);
+        ctx.lineTo(18,-48);
+        ctx.lineTo(67,2);
+        ctx.lineTo(12,35);
+        ctx.lineTo(-20,28);
+        ctx.closePath();
+        ctx.fillStyle = "purple";
+        ctx.fill();
+        ctx.stroke();
+
+        const scale = this.stadium / 100 * 0.8;
+        ctx.scale(scale,scale);
+
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.moveTo(-75,0);
+        ctx.lineTo(-45,-50);
+        ctx.lineTo(-17,-35);
+        ctx.lineTo(18,-48);
+        ctx.lineTo(67,2);
+        ctx.lineTo(12,35);
+        ctx.lineTo(-20,28);
+        ctx.closePath();
+        ctx.fillStyle = "green";
+        ctx.fill();
+
+        ctx.stroke();
+
+        ctx.restore();
+      }
+      if (this.stadium != 100)
+      {
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        if (this.stadium <= 50)
+        {
+          if (this.stadium == 5 || this.stadium == 15 || this.stadium == 25 || this.stadium == 35 || this.stadium == 45)
+          {
+            ctx.scale(1,1);
+          }
+          else if  (this.stadium == 0 || this.stadium == 10 || this.stadium == 20 || this.stadium == 30 || this.stadium == 40 || this.stadium == 50)
+          {
+            ctx.scale(0.8,0.8);
+          }
+        }
+        if (this.stadium <= 50)
+        {
+          ctx.beginPath();
+          ctx.moveTo(0,0);
+          ctx.moveTo(-70,0);
+          ctx.lineTo(-50,-45);
+          ctx.lineTo(-21,-60);
+          ctx.lineTo(-10,-55);
+          ctx.lineTo(20,-47);
+          ctx.lineTo(40,-30);
+          ctx.lineTo(72,3);
+          ctx.lineTo(55,20);
+          ctx.lineTo(30,30);
+          ctx.lineTo(-2,33);
+          ctx.lineTo(-35,36);
+          ctx.lineTo(-70,0);
+          ctx.closePath();
+          ctx.fillStyle = "#741B47";
+          ctx.fill();
+          ctx.stroke();
+        }
+        else if (this.stadium > 50 && this.stadium < 100)
+        {
+          ctx.beginPath();
+          ctx.moveTo(0,0);
+          ctx.moveTo(-75,0);
+          ctx.lineTo(-45,-50);
+          ctx.lineTo(-17,-35);
+          ctx.lineTo(18,-48);
+          ctx.lineTo(67,2);
+          ctx.lineTo(12,35);
+          ctx.lineTo(-20,28);
+          ctx.closePath();
+          ctx.fillStyle = "purple";
+          ctx.fill();
+          ctx.stroke();
+
+          let velikost = ((this.stadium - 50) / 50) * 0.8;
+          ctx.scale(velikost,velikost);
+
+          ctx.beginPath();
+          ctx.moveTo(0,0);
+          ctx.moveTo(-75,0);
+          ctx.lineTo(-45,-50);
+          ctx.lineTo(-17,-35);
+          ctx.lineTo(18,-48);
+          ctx.lineTo(67,2);
+          ctx.lineTo(12,35);
+          ctx.lineTo(-20,28);
+          ctx.closePath();
+          ctx.fillStyle = "green";
+          ctx.fill();
+
+          ctx.stroke();
+        }
+        ctx.restore();
       
-      ctx.beginPath();
-      ctx.moveTo(0,0);
-      ctx.moveTo(-75,0);
-      ctx.lineTo(-45,-50);
-      ctx.lineTo(-17,-35);
-      ctx.lineTo(18,-48);
-      ctx.lineTo(67,2);
-      ctx.lineTo(12,35);
-      ctx.lineTo(-20,28);
-      ctx.closePath();
-      ctx.fillStyle = "purple";
-      ctx.fill();
-      ctx.stroke();
-      ctx.scale(0.8,0.8);
-
-      ctx.beginPath();
-      ctx.moveTo(0,0);
-      ctx.moveTo(-75,0);
-      ctx.lineTo(-45,-50);
-      ctx.lineTo(-17,-35);
-      ctx.lineTo(18,-48);
-      ctx.lineTo(67,2);
-      ctx.lineTo(12,35);
-      ctx.lineTo(-20,28);
-      ctx.closePath();
-      ctx.fillStyle = "green";
-      ctx.fill();
-
-      ctx.stroke();
-
-      ctx.restore();
+    }
     }
   }//}}}
 
@@ -176,6 +407,19 @@ class Structure
             dron.move(trg_mineral.x,90);
             main_house.building = "none";      
             break;
+          case "zergling":
+            supplied += 1; 
+            let zergling = new Unit();
+            zergling.velikost = 25;
+            zergling.type = "zergling";
+            zergling.x = this.x;
+            zergling.y = this.y;
+            zergling.move(this.rally_point_x,this.rally_point_y);
+            zergling.life = 40;
+            main_house.building = "none";      
+            sounds.zergling_morph.play();
+            zergling.speed = 9.5;
+            break;
           default:
             alert("undefined build/unit")
           }
@@ -206,9 +450,9 @@ class Structure
       }
     }
   }//}}}
-
+ 
   upradge_code()
-  {
+  {/*{{{*/
     if (this.queue_2.length)
     {
       document.getElementById("ukazatel_upradgu").textContent = `Building: ${this.queue_2[0]}`;
@@ -249,6 +493,7 @@ class Structure
     }
     
   }
+/*}}}*/
 }
 //}}}
 
@@ -276,14 +521,11 @@ class Dron
 
   draw()
   {//{{{
-    var canvas = document.getElementById("plocha");
-    var ctx = canvas.getContext("2d");
     
     ctx.save();
     ctx.translate(this.x,this.y);
     ctx.rotate(this.angle/180*Math.PI);
 
-    //console.log(`x: ${x},y: ${y}`)
 
     if (this.am_I_selected == 1) 
     {
@@ -557,9 +799,29 @@ function distance(x,y,x1,y1,v)
   }
 //}}}
 
+function rally_point_draw(x,y)
+{
+  ctx.save();
+  ctx.translate(x,y)
+  
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(0,-15);
+  ctx.lineTo(-9,-15);
+  ctx.lineTo(-9,-10);
+  ctx.lineTo(0,-10);
+  ctx.closePath();
+  ctx.fillStyle = "purple";
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 build_length = {
-  "dron": 120,
+  "dron": 150,
   "supply_chamber": 200,
+  "zergling": 125,
 }
 
 function load_sounds()
@@ -571,6 +833,10 @@ function load_sounds()
     "dron_mining" : new Audio("res/mine.wav"),
     "dron_wake_up" : new Audio("res/dron_wakeup.wav"), 
     "upradge_complete" : new Audio("res/upradge_complete.wav"),
+    "zergling_command1" : new Audio("res/zergling1.wav"),
+    "zergling_command2" : new Audio("res/zergling2.wav"),
+    "zergling_command3" : new Audio("res/zergling3.wav"),
+    "zergling_morph" : new Audio("res/zergling4.wav"),
   }
 }
 
@@ -579,21 +845,32 @@ const canvas = document.getElementById("plocha");
 const ctx = canvas.getContext("2d");
 
 const new_drone_button = document.getElementById("new_drone_button");
-
 const sirka = screen.availWidth*3/4+55;
 const vyska = screen.availHeight;
 canvas.setAttribute("width", sirka);
 canvas.setAttribute("height",vyska);
+
+// object dictionaries
+let units = {};
+let minerals = {};
+let drones = {};
+let structures = {};
+
+// sounds
 let sounds = {};
 load_sounds();
-let supplied = 12;
-let supply = 15;
+
 let g_id = 0;
-let structures = {};
+
 let main_house = new Structure();
 main_house.type = "main_house";
 main_house.x = 655;
 main_house.y = 300;
+
+let building_mode = "none";
+let spawn_pool_exist = 0;
+let supplied = 12;
+let supply = 15;
 let mineralky = 50; 
 let num_of_drones = 0;
 let x_drone = 450;
@@ -603,7 +880,6 @@ let building = "none";
 
 // INIT
 
-drones = {};
 for (let i = 0;i < 12;i++)
 {
   let dron = new Dron();
@@ -615,7 +891,6 @@ for (let dron of Object.values(drones))
   dron.x += 350;
 }
 
-minerals = {};
 
 for (let i = 0;i < 4;i++)
 {
@@ -659,11 +934,20 @@ function akce()
   {
     structure.build_units();
     structure.upradge_code();
+    if (structure.stadium != 1 && structure.stadium < 100)
+    {
+      structure.stadium += 1
+    }
   }
 
   for (let dron of Object.values(drones))
   {
     dron.akce();
+  }
+  
+  for (let unit of Object.values(units))
+  {
+    unit.akce();
   }
   draw();
 }
@@ -676,6 +960,10 @@ function draw()
   document.getElementById("miner.").textContent = "Minerals:" + mineralky;
   document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
   document.getElementById("supply").textContent = "Supply:" + supplied + "/" + supply;
+  for (let unit of Object.values(units))
+  {
+    unit.draw();
+  }   
   for (let dron of Object.values(drones))
   {
     dron.draw();
@@ -688,6 +976,13 @@ function draw()
   for (let structure of Object.values(structures))
   {
     structure.draw();
+  }
+  for (let structure of Object.values(structures))
+  {
+    if (structure.type == "main_house" && structure.am_I_selected == 1)
+    {
+      rally_point_draw(structure.rally_point_x,structure.rally_point_y);
+    }
   }
 }
 //}}}
@@ -714,6 +1009,9 @@ function mousebutton(event)
        for (let dron of Object.values(drones)) {
          dron.am_I_selected = 0;
        }
+       for (let structure of Object.values(structures)) {
+         structure.am_I_selected = 0;
+       }
        document.getElementById("main_house_name").style.display = "none";
        document.getElementById("Hatchery_lifes").style.display = "none";
        document.getElementById("minerals_name").style.display = "none" 
@@ -725,6 +1023,9 @@ function mousebutton(event)
        document.getElementById("more_supply_button").style.display = "none";
        document.getElementById("spool_name").style.display = "none";
        document.getElementById("spool_life").style.display = "none";
+       document.getElementById("zergling_button").style.display = "none";
+       document.getElementById("zergling_lifes").style.display = "none";
+       document.getElementById("zergling_name").style.display = "none";
        
        for (let dron of Object.values(drones)) {
          if (dron.click_drone(x_click,y_click)) {
@@ -756,7 +1057,9 @@ function mousebutton(event)
              document.getElementById("main_house_name").style.display = "block"
              document.getElementById("Hatchery_lifes").style.display = "block";
              document.getElementById("new_drone_button").style.display = "block"; 
+             document.getElementById("zergling_button").style.display = "block";
              document.getElementById("more_supply_button").style.display = "block";
+             structure.am_I_selected = 1;
              break;
            }
            else if (structure.type == "spawn_pool")
@@ -768,6 +1071,24 @@ function mousebutton(event)
            }
          }
        }
+       for (let unit of Object.values(units))
+       {
+         if (unit.type == "zergling")
+         {
+           if (distance(unit.x,unit.y,x_click,y_click,unit.velikost))
+           {
+             unit.am_I_selected = 1;
+             document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
+             document.getElementById("zergling_lifes").style.display = "block";
+             document.getElementById("zergling_name").style.display = "block";
+           }
+           else
+           {
+             unit.am_I_selected = 0;
+           }
+         }
+       }
+       
        }
      }
    }//}}}
@@ -813,6 +1134,17 @@ function mousebutton(event)
          }
          if (mozno)
          {
+           for (let unit of Object.values(units))
+           {
+             if (distance(unit.x,unit.y,x_click,y_click,100))
+             {
+               mozno = false;
+               break;
+             }
+           }
+         }
+         if (mozno)
+         {
            dron.work = "building";
            dron.move(x_click,y_click);
 
@@ -845,16 +1177,16 @@ function mousebutton(event)
 //{{{
 canvas.addEventListener("mousedown", function(event)
 {
-    if (mousebutton(event) == 2) 
+  if (mousebutton(event) == 2) 
   {
+    const rect2 = canvas.getBoundingClientRect();
+    const x = event.clientX - rect2.left;
+    const y = event.clientY - rect2.top;
     for (let dron of Object.values(drones))
     {
       if (dron.am_I_selected == 1)
       {
         //set values
-        const rect2 = canvas.getBoundingClientRect();
-        const x = event.clientX - rect2.left;
-        const y = event.clientY - rect2.top;
         let kliknuto = 0;
         
         //am I go to the minerals?
@@ -896,6 +1228,51 @@ canvas.addEventListener("mousedown", function(event)
         {
           dron.work = "move";
           dron.move(x,y)
+        }
+      }
+    }
+    for (let unit of Object.values(units))
+    {
+      if (unit.am_I_selected == 1)
+      {
+        
+        //moving to the position of mouse  
+        let sound = Math.floor(Math.random()*2);
+        if (sound == 1)
+        {
+          sounds.zergling_command1.play();
+        }
+        else
+        {
+          sounds.zergling_command2.play();
+        }
+        unit.action = "move";
+        unit.move(x,y)
+      }
+    }
+    for (let structure of Object.values(structures))
+    {
+      if (structure.am_I_selected == 1 && structure.type == "main_house")
+      {
+        let mozno2 = true;
+        for (let structure of Object.values(structures))
+        {
+          if (mozno2)
+          {
+            if (distance(structure.x,structure.y,x,y,125))
+            {
+              mozno2 = true;
+            }
+            else
+            {
+              moozno2 = false; 
+            }
+          }
+        }
+        if (mozno2)
+        {
+          structure.rally_point_x = x;
+          structure.rally_point_y = y;
         }
       }
     }
@@ -993,3 +1370,27 @@ document.getElementById("more_supply_button").addEventListener("click", function
   }
 });
 
+document.getElementById("zergling_button").addEventListener("click", function() {
+  if (mineralky >= 50 && main_house.queue.length < 5 && spawn_pool_exist == 1)
+  {
+    mineralky -= 50;
+    main_house.queue.push("zergling");
+  }
+  else
+  {
+    if (mineralky >= 50)
+    {
+      document.getElementById("full_queue").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("full_queue").style.display = "none";
+      },3500);  
+    }
+    else
+    {
+document.getElementById("no_minerals").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("no_minerals").style.display = "none";
+      },3500);  
+    }
+  }
+});

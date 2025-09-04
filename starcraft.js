@@ -145,6 +145,22 @@ class Unit
     this.action = "move";
   }//}}}
 
+  click_zergling(x,y)
+//{{{
+  { 
+    const xd = x - this.x;
+    const yd = y - this.y;
+    const d = Math.sqrt(xd*xd + yd*yd);
+    if (d >= this.velikost) 
+    {
+      return false;
+    }
+    else 
+    {
+      return true;
+    }
+  }
+//}}}
 }
 /*}}}*/
 
@@ -385,7 +401,6 @@ class Structure
     {
       document.getElementById("ukazatel_casu").textContent = `Building: ${this.queue[0]}`;
 
-      document.getElementById("ukazatel_velikosti_units").style.display = "block";
       ++this.progress;
       if (build_length[this.queue[0]] <= this.progress)
       {
@@ -418,7 +433,7 @@ class Structure
             zergling.life = 40;
             main_house.building = "none";      
             sounds.zergling_morph.play();
-            zergling.speed = 9.5;
+            zergling.speed = 7;
             break;
           default:
             alert("undefined build/unit")
@@ -457,7 +472,6 @@ class Structure
     {
       document.getElementById("ukazatel_upradgu").textContent = `Building: ${this.queue_2[0]}`;
 
-      document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
       ++this.progress_2;
       if (build_length[this.queue_2[0]] <= this.progress_2)
       {
@@ -930,6 +944,7 @@ for (let dron of Object.values(drones))
 
 function akce()
 {
+  
   for (let structure of Object.values(structures))
   {
     structure.build_units();
@@ -956,6 +971,7 @@ function akce()
 function draw()
 //{{{
 {
+
   ctx.clearRect(0,0,1823,1004);
   document.getElementById("miner.").textContent = "Minerals:" + mineralky;
   document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
@@ -1012,6 +1028,10 @@ function mousebutton(event)
        for (let structure of Object.values(structures)) {
          structure.am_I_selected = 0;
        }
+       for (let unit of Object.values(units)) {
+         unit.am_I_selected = 0;
+       }
+       document.getElementById("ukazatel_velikosti_units").style.display = "none";
        document.getElementById("main_house_name").style.display = "none";
        document.getElementById("Hatchery_lifes").style.display = "none";
        document.getElementById("minerals_name").style.display = "none" 
@@ -1026,6 +1046,8 @@ function mousebutton(event)
        document.getElementById("zergling_button").style.display = "none";
        document.getElementById("zergling_lifes").style.display = "none";
        document.getElementById("zergling_name").style.display = "none";
+       document.getElementById("fast_zergling_button").style.display = "none";
+       document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
        
        for (let dron of Object.values(drones)) {
          if (dron.click_drone(x_click,y_click)) {
@@ -1059,6 +1081,8 @@ function mousebutton(event)
              document.getElementById("new_drone_button").style.display = "block"; 
              document.getElementById("zergling_button").style.display = "block";
              document.getElementById("more_supply_button").style.display = "block";
+             document.getElementById("ukazatel_velikosti_units").style.display = "block";
+             document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
              structure.am_I_selected = 1;
              break;
            }
@@ -1067,25 +1091,23 @@ function mousebutton(event)
              document.getElementById("spool_name").style.display = "block";
              document.getElementById("spool_life").style.display = "block";
              document.getElementById("spool_life").textContent = "Lifes:" + structure.life;
+             if (structure.stadium >= 100)
+             {
+             document.getElementById("fast_zergling_button").style.display = "block";
+             }
              break;
            }
          }
        }
        for (let unit of Object.values(units))
        {
-         if (unit.type == "zergling")
+         if (unit.click_zergling(x_click,y_click) && unit.type == "zergling")
          {
-           if (distance(unit.x,unit.y,x_click,y_click,unit.velikost))
-           {
-             unit.am_I_selected = 1;
-             document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
-             document.getElementById("zergling_lifes").style.display = "block";
-             document.getElementById("zergling_name").style.display = "block";
-           }
-           else
-           {
-             unit.am_I_selected = 0;
-           }
+           unit.am_I_selected = 1;
+           document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
+           document.getElementById("zergling_lifes").style.display = "block";
+           document.getElementById("zergling_name").style.display = "block";
+           break;
          }
        }
        
@@ -1261,11 +1283,7 @@ canvas.addEventListener("mousedown", function(event)
           {
             if (distance(structure.x,structure.y,x,y,125))
             {
-              mozno2 = true;
-            }
-            else
-            {
-              moozno2 = false; 
+              mozno2 = false;
             }
           }
         }
@@ -1285,7 +1303,27 @@ canvas.addEventListener("contextmenu", function(event)
 });
 //}}}
 
-new_drone_button.addEventListener("click", function() {
+document.addEventListener("keyup", function(event)
+{
+  switch (event.key)
+  {
+  case "d":
+    new_dron();
+    break;
+  case "z":
+    new_zergling();
+    break;
+  case "v":
+    new_supply_chamber();
+    break;
+  case "s":
+    new_spool();
+    break;
+  }
+});
+
+function new_dron()
+{
   if (main_house.queue.length < 5 && supply > supplied && mineralky >= 50)
   {
     mineralky -= 50;
@@ -1295,17 +1333,17 @@ new_drone_button.addEventListener("click", function() {
   {
     if (supply <= supplied)
     {
-    document.getElementById("no_supply").style.display = "block";
-    setTimeout(() => {
-    document.getElementById("no_supply").style.display = "none";
-    },3500);      
+      document.getElementById("no_supply").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("no_supply").style.display = "none";
+      },3500);      
     }
     else if (mineralky < 50)
     {
-    document.getElementById("no_minerals").style.display = "block";
-    setTimeout(() => {
-    document.getElementById("no_minerals").style.display = "none";
-    },3500);      
+      document.getElementById("no_minerals").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("no_minerals").style.display = "none";
+      },3500);      
     }
     else
     {
@@ -1315,9 +1353,10 @@ new_drone_button.addEventListener("click", function() {
       },3500);      
     }
   }
-});
+}
 
-document.getElementById("build_spool").addEventListener("click", function() {
+function new_spool()
+{
   if (mineralky >= 150)
   {  
     building = "spawn_pool";
@@ -1330,6 +1369,13 @@ document.getElementById("build_spool").addEventListener("click", function() {
     document.getElementById("no_minerals").style.display = "none";
     },3500);
   }
+}
+new_drone_button.addEventListener("click", function() {
+  new_dron();
+});
+
+document.getElementById("build_spool").addEventListener("click", function() {
+  new_spool();
 });
 
 function build(x,y)
@@ -1345,7 +1391,8 @@ function build(x,y)
   }
 }
 
-document.getElementById("more_supply_button").addEventListener("click", function() {
+function new_supply_chamber()
+{
   if (mineralky >= 100 && main_house.queue_2.length < 5)
   {
     mineralky -= 100;
@@ -1368,9 +1415,17 @@ document.getElementById("more_supply_button").addEventListener("click", function
       },3500);  
     }
   }
+}
+document.getElementById("more_supply_button").addEventListener("click", function() {
+  new_supply_chamber();
 });
 
 document.getElementById("zergling_button").addEventListener("click", function() {
+  new_zergling();
+});
+
+function new_zergling()
+{
   if (mineralky >= 50 && main_house.queue.length < 5 && spawn_pool_exist == 1)
   {
     mineralky -= 50;
@@ -1380,17 +1435,28 @@ document.getElementById("zergling_button").addEventListener("click", function() 
   {
     if (mineralky >= 50)
     {
-      document.getElementById("full_queue").style.display = "block";
-      setTimeout(() => {
-      document.getElementById("full_queue").style.display = "none";
-      },3500);  
+      if (supply == supplied)
+      { 
+        document.getElementById("no_supply").style.display = "block";
+        setTimeout(() => {
+        document.getElementById("no_supply").style.display = "none";
+        },3500);  
+      }
+      else
+      {
+        document.getElementById("need_spool").style.display = "block";
+        setTimeout(() => {
+        document.getElementById("need_spool").style.display = "none";
+        },3500);  
+      }
     }
     else
     {
-document.getElementById("no_minerals").style.display = "block";
+      document.getElementById("no_minerals").style.display = "block";
       setTimeout(() => {
       document.getElementById("no_minerals").style.display = "none";
       },3500);  
     }
   }
-});
+}
+

@@ -104,3 +104,19 @@
 #fast_zergling_button:hover {
   background-color:#5b5b5b;
 }
+
+#ukazatel_upradgu_spool {
+  text-wrap-mode:nowrap;  
+  background-color:orange;
+  color:black;
+  display:none;
+  width:0%;
+}
+
+#ukazatel_velikosti_upradges_spool {
+   text-wrap-mode:nowrap;  
+   background-color:grey;
+   color:black;
+   display:none;
+   width:300px;
+}

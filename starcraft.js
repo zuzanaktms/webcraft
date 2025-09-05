@@ -433,7 +433,14 @@ class Structure
             zergling.life = 40;
             main_house.building = "none";      
             sounds.zergling_morph.play();
-            zergling.speed = 7;
+            if (zergling_speed == 1)
+            {
+              zergling.speed = 9.5;
+            }
+            else
+            {
+              zergling.speed = 7;
+            }
             break;
           default:
             alert("undefined build/unit")
@@ -479,6 +486,21 @@ class Structure
           {
           case "supply_chamber":
             supply += 8; 
+            document.getElementById("upradge_complete").style.display = "block";
+            sounds.upradge_complete.play();
+            setTimeout(() => {
+            document.getElementById("upradge_complete").style.display = "none";
+            },3500);
+            break;
+          case "zergling_speed":
+            zergling_speed = 1;
+            for (let unit of Object.values(units))
+            {
+              if (unit.type = "zergling")
+              {
+                unit.speed = 9.5;
+              }
+            }
             document.getElementById("upradge_complete").style.display = "block";
             sounds.upradge_complete.play();
             setTimeout(() => {
@@ -836,6 +858,7 @@ build_length = {
   "dron": 150,
   "supply_chamber": 200,
   "zergling": 125,
+  "zergling_speed": 210,
 }
 
 function load_sounds()
@@ -881,6 +904,7 @@ main_house.type = "main_house";
 main_house.x = 655;
 main_house.y = 300;
 
+let zergling_speed = 0;
 let building_mode = "none";
 let spawn_pool_exist = 0;
 let supplied = 12;
@@ -1091,6 +1115,8 @@ function mousebutton(event)
              document.getElementById("spool_name").style.display = "block";
              document.getElementById("spool_life").style.display = "block";
              document.getElementById("spool_life").textContent = "Lifes:" + structure.life;
+             document.getElementById("ukazatel_velikosti_units").style.display = "block";
+             document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
              if (structure.stadium >= 100)
              {
              document.getElementById("fast_zergling_button").style.display = "block";
@@ -1319,6 +1345,9 @@ document.addEventListener("keyup", function(event)
   case "s":
     new_spool();
     break;
+  case "w":
+    u_zergling_speed();
+    break;
   }
 });
 
@@ -1355,6 +1384,31 @@ function new_dron()
   }
 }
 
+function u_zergling_speed()
+{
+  if (main_house.queue_2.length < 5 && mineralky >= 100)
+  {
+    mineralky -= 100;
+    main_house.queue_2.push("zergling_speed");
+  }
+  else
+  {
+    if (mineralky < 50)
+    {
+      document.getElementById("no_minerals").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("no_minerals").style.display = "none";
+      },3500);      
+    }
+    else
+    {
+      document.getElementById("full_queue").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("full_queue").style.display = "none";
+      },3500);      
+    }
+  }
+}
 function new_spool()
 {
   if (mineralky >= 150)
@@ -1424,6 +1478,10 @@ document.getElementById("zergling_button").addEventListener("click", function() 
   new_zergling();
 });
 
+document.getElementById("fast_zergling_button").addEventListener("click", function() {
+  u_zergling_speed();
+});
+
 function new_zergling()
 {
   if (mineralky >= 50 && main_house.queue.length < 5 && spawn_pool_exist == 1)
@@ -1435,7 +1493,7 @@ function new_zergling()
   {
     if (mineralky >= 50)
     {
-      if (supply == supplied)
+      if (supply <= supplied)
       { 
         document.getElementById("no_supply").style.display = "block";
         setTimeout(() => {
@@ -1444,10 +1502,20 @@ function new_zergling()
       }
       else
       {
-        document.getElementById("need_spool").style.display = "block";
-        setTimeout(() => {
-        document.getElementById("need_spool").style.display = "none";
-        },3500);  
+        if (main_house.queue.length < 5)
+        {
+          document.getElementById("need_spool").style.display = "block";
+          setTimeout(() => {
+          document.getElementById("need_spool").style.display = "none";
+          },3500);  
+        }
+        else
+        {
+          document.getElementById("full_queue").style.display = "block";
+          setTimeout(() => {
+          document.getElementById("full_queue").style.display = "none";
+          },3500);  
+        }
       }
     }
     else

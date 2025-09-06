@@ -467,6 +467,10 @@ class Structure
       {
         let cislo = this.progress / build_length[this.queue[0]] * 100;
         let div = document.getElementById("ukazatel_casu");
+        if (main_house.am_i_selected == 1)
+        {
+        document.getElementById("ukazatel_velikosti_units").style.display = "block";
+        }
         div.style.display = "block";
         div.style.width = cislo + "%";
       }
@@ -995,7 +999,10 @@ function akce()
 function draw()
 //{{{
 {
-
+  if (main_house.queue > 0 && main_house.am_I_selected == 1)
+  {
+      document.getElementById("ukazatel_velikosti_units").style.display = "block";
+  }
   ctx.clearRect(0,0,1823,1004);
   document.getElementById("miner.").textContent = "Minerals:" + mineralky;
   document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
@@ -1331,25 +1338,27 @@ canvas.addEventListener("contextmenu", function(event)
 
 document.addEventListener("keyup", function(event)
 {
-  switch (event.key)
-  {
-  case "d":
-    new_dron();
-    break;
-  case "z":
-    new_zergling();
-    break;
-  case "v":
-    new_supply_chamber();
-    break;
-  case "s":
-    new_spool();
-    break;
-  case "w":
-    u_zergling_speed();
-    break;
-  }
+
+    switch (event.key)
+    {
+    case "d":
+      new_dron();
+      break;
+    case "z":
+      new_zergling();
+      break;
+    case "v":
+      new_supply_chamber();
+      break;
+    case "s":
+      new_spool();
+      break;
+    case "w":
+      u_zergling_speed();
+      break;
+    }
 });
+
 
 function new_dron()
 {
@@ -1357,6 +1366,8 @@ function new_dron()
   {
     mineralky -= 50;
     main_house.queue.push("dron");
+    document.getElementById("ukazatel_casu").style.display = "block";
+    document.getElementById("ukazatel_velikosti_units").style.display = "block";
   }
   else
   {
@@ -1393,7 +1404,7 @@ function u_zergling_speed()
   }
   else
   {
-    if (mineralky < 50)
+    if (mineralky < 100)
     {
       document.getElementById("no_minerals").style.display = "block";
       setTimeout(() => {
@@ -1476,6 +1487,8 @@ document.getElementById("more_supply_button").addEventListener("click", function
 
 document.getElementById("zergling_button").addEventListener("click", function() {
   new_zergling();
+  document.getElementById("ukazatel_casu").style.display = "none";
+  document.getElementById("ukazatel_velikosti_units").style.display = "none";
 });
 
 document.getElementById("fast_zergling_button").addEventListener("click", function() {

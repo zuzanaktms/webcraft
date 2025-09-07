@@ -908,6 +908,12 @@ main_house.type = "main_house";
 main_house.x = 655;
 main_house.y = 300;
 
+let mousedown = false;
+let end_select_y = 0;
+let end_select_x = 0;
+let x_select_start = 0;
+let y_select_start = 0;
+let big_select = 0;
 let zergling_speed = 0;
 let building_mode = "none";
 let spawn_pool_exist = 0;
@@ -1030,6 +1036,10 @@ function draw()
     {
       rally_point_draw(structure.rally_point_x,structure.rally_point_y);
     }
+  }
+  if (big_select == 1)
+  {
+    draw_select_square(x_select_start,y_select_start,end_select_x,end_select_y);
   }
 }
 //}}}
@@ -1501,6 +1511,8 @@ function new_zergling()
   {
     mineralky -= 50;
     main_house.queue.push("zergling");
+    document.getElementById("ukazatel_casu").style.display = "block";
+    document.getElementById("ukazatel_velikosti_units").style.display = "block";
   }
   else
   {
@@ -1541,3 +1553,79 @@ function new_zergling()
   }
 }
 
+let znaceni = 0;
+
+document.addEventListener("mousedown", function(event) {
+  if (event.button == 0)
+  {
+  mousedown = true;
+  end_select_x = event.clientX;// - rect.left;
+  end_select_y = event.clientY;// - rect.top;
+  x_select_start = event.clientX;// - rect.left;
+  y_select_start = event.clientY;// - rect.top;
+  setTimeout(() => {
+  if (mousedown === true)
+  {
+    big_select = 1;
+    znaceni = 1;
+  }
+  }, 100);
+  }
+});
+
+document.addEventListener("mouseup", function(event) {
+  mousedown = false;
+  big_select = 0;
+  if (znaceni == 0) 
+  {
+    x_select_start = 0;
+    y_select_start = 0;
+  }
+  else
+  {
+    maxX = Math.max(x_select_start, end_select_x);
+    maxY = Math.max(y_select_start, end_select_y);
+    minX = Math.min(x_select_start, end_select_x);
+    minY = Math.min(y_select_start, end_select_y);
+    for (let dron of Object.values(drones))
+    {
+      if (dron.x > minX && dron.x < maxX && dron.y > minY && dron.y < maxY)
+      {
+        dron.am_I_selected = 1;
+      }
+    }
+    for (let unit of Object.values(units))
+    {
+      if (unit.x > minX && unit.x < maxX && unit.y > minY && unit.y < maxY)
+      {
+        unit.am_I_selected = 1;
+      }
+    }
+  }
+
+});
+
+document.addEventListener("mousemove", function(event) {
+  if (mousedown && big_select === 1 && x_select_start != 0 && y_select_start != 0)
+  {
+    end_select_x = event.clientX;// - rect.left;
+    end_select_y = event.clientY;// - rect.top;
+  }
+});
+
+function draw_select_square(x_s,y_s,x_e,y_e)
+{
+    ctx.save();
+    ctx.beginPath();
+
+    ctx.moveTo(x_s,y_s);
+    ctx.lineTo(x_s,y_e);
+    ctx.lineTo(x_e,y_e);
+    ctx.lineTo(x_e,y_s);
+        
+    ctx.fillStyle = "rgba(0, 200, 0, 0.3)";
+    ctx.fill();
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+}

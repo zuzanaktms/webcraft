@@ -910,6 +910,8 @@ main_house.type = "main_house";
 main_house.x = 655;
 main_house.y = 300;
 
+let x_screen = 0;
+let y_screen = 0;
 let mousedown = false;
 let end_select_y = 0;
 let end_select_x = 0;
@@ -1056,7 +1058,7 @@ function mousebutton(event)
 
 //selecting
 //{{{
-  canvas.addEventListener("click", function(event)
+  canvas.addEventListener("mousedown", function(event)
   {
    const rect = canvas.getBoundingClientRect();
    const x_click = event.clientX - rect.left;
@@ -1252,7 +1254,7 @@ function mousebutton(event)
   
 //move after click to right button of mouse
 //{{{
-canvas.addEventListener("mousedown", function(event)
+canvas.addEventListener("mouseup", function(event)
 {
   if (mousebutton(event) == 2) 
   {
@@ -1377,6 +1379,18 @@ document.addEventListener("keyup", function(event)
       break;
     case "w":
       u_zergling_speed();
+      break;
+    case "ArrowDown":
+      y_screen -= 10;
+      break;
+    case "ArrowUp":
+      y_screen += 10;
+      break;
+    case "ArrowLeft":
+      x_screen -= 10;
+      break;
+    case "ArrowRight":
+      x_screen += 10;
       break;
     }
 });
@@ -1576,18 +1590,18 @@ let znaceni = 0;
 document.addEventListener("mousedown", function(event) {
   if (event.button == 0)
   {
-  mousedown = true;
-  end_select_x = event.clientX;// - rect.left;
-  end_select_y = event.clientY;// - rect.top;
-  x_select_start = event.clientX;// - rect.left;
-  y_select_start = event.clientY;// - rect.top;
-  setTimeout(() => {
-  if (mousedown === true)
-  {
-    big_select = 1;
-    znaceni = 1;
-  }
-  }, 100);
+    mousedown = true;
+    end_select_x = event.clientX;// - rect.left;
+    end_select_y = event.clientY;// - rect.top;
+    x_select_start = event.clientX;// - rect.left;
+    y_select_start = event.clientY;// - rect.top;
+    setTimeout(() => {
+      if (mousedown === true)
+      {
+        big_select = 1;
+        znaceni = 1;
+      }
+    }, 100);
   }
 });
 
@@ -1618,11 +1632,10 @@ document.addEventListener("mouseup", function(event) {
       if (unit.x > minX && unit.x < maxX && unit.y > minY && unit.y < maxY)
       {
         unit.am_I_selected = 1;
-        select[dron.id] = dron;
+        select[unit.id] = unit;
       }
     }
   }
-
 });
 
 document.addEventListener("mousemove", function(event) {
@@ -1649,3 +1662,20 @@ function draw_select_square(x_s,y_s,x_e,y_e)
     ctx.stroke();
     ctx.restore();
 }
+
+
+
+
+
+//canvas.addEventListener("mousedown", function(event)
+//{
+//  if (event.button === 1) 
+//  {
+//    event.preventDefault();
+//    console.log("156");
+//    let move_screen_x = event.clientX;
+//    let move_screen_y = event.clientY;
+//    x_screen += move_screen_x; 
+//    y_screen += move_screen_y;  
+//  }
+//});

@@ -543,6 +543,7 @@ class Dron
 {
   constructor()
   {//{{{
+    this.building = 0;
     this.id = g_id++;
     drones[this.id] = this;
     this.am_I_selected = 0;
@@ -896,6 +897,7 @@ let units = {};
 let minerals = {};
 let drones = {};
 let structures = {};
+let select = {};
 
 // sounds
 let sounds = {};
@@ -1089,7 +1091,8 @@ function mousebutton(event)
        document.getElementById("zergling_name").style.display = "none";
        document.getElementById("fast_zergling_button").style.display = "none";
        document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
-       
+       select = {};
+
        for (let dron of Object.values(drones)) {
          if (dron.click_drone(x_click,y_click)) {
            dron.am_I_selected = 1;
@@ -1100,6 +1103,7 @@ function mousebutton(event)
            document.getElementById("minerals_name").style.display = "none" 
            document.getElementById("minerals_kapacita").style.display = "none";
            sounds.dron_select.play();
+           select[dron.id] = dron;
            break;
          }
        for (let mineral of Object.values(minerals)) {
@@ -1116,6 +1120,7 @@ function mousebutton(event)
          {
            if (structure.type == "main_house")
            {
+             select[structure.id] = structure.type;
              document.getElementById("Hatchery_lifes").textContent = "Lifes:" + main_house_lifes;
              document.getElementById("main_house_name").style.display = "block"
              document.getElementById("Hatchery_lifes").style.display = "block";
@@ -1129,6 +1134,7 @@ function mousebutton(event)
            }
            else if (structure.type == "spawn_pool")
            {
+             select[structure.id] = structure.type;
              document.getElementById("spool_name").style.display = "block";
              document.getElementById("spool_life").style.display = "block";
              document.getElementById("spool_life").textContent = "Lifes:" + structure.life;
@@ -1147,6 +1153,7 @@ function mousebutton(event)
          if (unit.click_zergling(x_click,y_click) && unit.type == "zergling")
          {
            unit.am_I_selected = 1;
+           select[unit.id] = unit.type;
            document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
            document.getElementById("zergling_lifes").style.display = "block";
            document.getElementById("zergling_name").style.display = "block";
@@ -1162,8 +1169,11 @@ function mousebutton(event)
      let mozno = true;
      for (let dron of Object.values(drones))
      {
-       if (dron.am_I_selected == 1) 
+      
+       console.log("lgg");
+       if (dron.am_I_selected == 1 && dron.building == 1) 
        {
+         console.log("loggg");
          for (let structure of Object.values(structures))
          {
            if (distance(structure.x,structure.y,x_click,y_click,150))
@@ -1210,8 +1220,10 @@ function mousebutton(event)
          }
          if (mozno)
          {
+           dron.building = 0;
            dron.work = "building";
            dron.move(x_click,y_click);
+           delete select[dron.id];
 
           let sound = Math.floor(Math.random()*2);
           if (sound == 1)
@@ -1432,6 +1444,13 @@ function u_zergling_speed()
 }
 function new_spool()
 {
+  
+  if (Object.values(select).length >= 1)
+  {
+      let dron = Object.values(select)[0];
+      dron.building = 1;
+  }
+
   if (mineralky >= 150)
   {  
     building = "spawn_pool";
@@ -1457,6 +1476,7 @@ function build(x,y)
 {
   if (building == "spawn_pool")
   {
+    supplied -= 1;
     mineralky -= 150;
     structure = new Structure();
     structure.type = building;
@@ -1497,8 +1517,6 @@ document.getElementById("more_supply_button").addEventListener("click", function
 
 document.getElementById("zergling_button").addEventListener("click", function() {
   new_zergling();
-  document.getElementById("ukazatel_casu").style.display = "none";
-  document.getElementById("ukazatel_velikosti_units").style.display = "none";
 });
 
 document.getElementById("fast_zergling_button").addEventListener("click", function() {
@@ -1592,6 +1610,7 @@ document.addEventListener("mouseup", function(event) {
       if (dron.x > minX && dron.x < maxX && dron.y > minY && dron.y < maxY)
       {
         dron.am_I_selected = 1;
+        select[dron.id] = dron;
       }
     }
     for (let unit of Object.values(units))
@@ -1599,6 +1618,7 @@ document.addEventListener("mouseup", function(event) {
       if (unit.x > minX && unit.x < maxX && unit.y > minY && unit.y < maxY)
       {
         unit.am_I_selected = 1;
+        select[dron.id] = dron;
       }
     }
   }

@@ -1,3 +1,145 @@
+//class enemy_unit
+/*{{{*/
+class Enemy_unit
+{
+  constructor()
+  /*{{{*/
+  {
+    this.drones_id = 0;
+    this.type = "none";
+    this.select_drone = 0;
+    this.x = 0;
+    this.y = 0;
+    this.angle = 0;
+    this.velikost = 0;
+    this.id = g_id++;
+    this.life = 0;
+    this.x_cil = this.x;
+    this.y_cil = this.y;
+    this.speed = 7;
+    enemy_units[this.id] = this;
+  }
+/*}}}*/
+
+  draw()
+  {/*{{{*/
+    ctx.save();
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.angle/180*Math.PI);
+    
+    if (this.type == "zergling")
+    {
+      
+      //body
+      ctx.beginPath();
+      ctx.moveTo(-7,0);
+      ctx.lineTo(-6, -4);
+      ctx.lineTo(-5, -5);
+      ctx.lineTo(-2, -7);
+      ctx.lineTo(2, -7);
+      ctx.lineTo(5, -5);
+      ctx.lineTo(6, -4);
+      ctx.lineTo(7, 0);
+      ctx.moveTo(-7, 0);
+      ctx.lineTo(-5, 25);
+      ctx.lineTo(-3, 26);
+      ctx.lineTo(-2, 28);
+      ctx.lineTo(2, 28);
+      ctx.lineTo(3, 27);
+      ctx.lineTo(5, 25);
+      ctx.lineTo(7, 0);
+      ctx.moveTo(4, 26);
+      ctx.lineTo(3, 32);
+      ctx.lineTo(0, 38);
+      ctx.lineTo(-3, 32);
+      ctx.lineTo(-4, 26);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.fillStyle = "red";
+      ctx.fill();
+
+      //arms
+      ctx.beginPath();
+      ctx.moveTo(-5, -5);
+      ctx.lineTo(-5, -11);
+      ctx.lineTo(-6, -13);
+      ctx.lineTo(-7, -11);
+      ctx.lineTo(-7, -6);
+      ctx.moveTo(5, -5);
+      ctx.lineTo(5, -11);
+      ctx.lineTo(6, -13);
+      ctx.lineTo(7, -11);
+      ctx.lineTo(7, -6);
+      ctx.closePath();
+      ctx.fillStyle = "red"
+      ctx.fill();
+      ctx.stroke();
+     
+      //left wing
+      ctx.beginPath();
+      ctx.moveTo(-4, -2);
+      ctx.lineTo(-11, 10);
+      ctx.lineTo(-12, 15);
+      ctx.lineTo(-11, 23);
+      ctx.lineTo(-5, 17);
+      ctx.closePath();
+      ctx.fillStyle = "teal"
+      ctx.fill();
+      ctx.stroke();
+      
+      //rigth wing
+      ctx.beginPath();
+      ctx.moveTo(4, -2);
+      ctx.lineTo(11, 10);
+      ctx.lineTo(12, 15);
+      ctx.lineTo(11, 23);
+      ctx.lineTo(5, 17);
+      ctx.closePath();
+      ctx.fillStyle = "teal"
+      ctx.fill();
+      ctx.stroke();
+    }
+    
+    ctx.restore();
+  }/*}}}*/
+
+  akce()
+  {//{{{
+    switch (this.action)
+    {
+    case "none":
+      break;
+    case "move":     
+        const xd = this.x_cil - this.x;
+        const yd = this.y_cil - this.y;
+        const d = Math.sqrt(xd*xd + yd*yd);
+        if (d <= this.speed)
+        {
+          this.x = this.x_cil;
+          this.y = this.y_cil;
+        }
+        else
+        {  
+          this.x += xd/d * this.speed;
+          this.y += yd/d * this.speed;
+
+          let rad_angle = Math.atan2(yd,xd);
+          let deg_angle = rad_angle * 180 / Math.PI;
+          this.angle = 90 + deg_angle;
+        }
+      break;
+    }
+  }//}}}
+  
+  move(x,y)
+  {//{{{
+    this.x_cil = x;
+    this.y_cil = y;
+    this.action = "move";
+  }//}}}
+}
+/*}}}*/
+
 //class units
 /*{{{*/
 class Unit
@@ -543,6 +685,7 @@ class Dron
 {
   constructor()
   {//{{{
+    this.find_number = number_of_drones++;
     this.building = 0;
     this.id = g_id++;
     drones[this.id] = this;
@@ -899,6 +1042,8 @@ let drones = {};
 let structures = {};
 let select = {};
 
+let enemy_units = {};
+
 // sounds
 let sounds = {};
 load_sounds();
@@ -910,6 +1055,8 @@ main_house.type = "main_house";
 main_house.x = 655;
 main_house.y = 300;
 
+let number_of_drones = 0;
+let zergling_rush = 0;
 let x_screen = 0;
 let y_screen = 0;
 let mousedown = false;
@@ -929,6 +1076,8 @@ let x_drone = 450;
 let main_house_lifes = 1250;
 let ukol = "none";
 let building = "none";
+
+wait_for_more_rush();
 
 // INIT
 
@@ -981,6 +1130,7 @@ for (let dron of Object.values(drones))
 //}}}
 
 function akce()
+/*{{{*/
 {
   
   for (let structure of Object.values(structures))
@@ -1002,10 +1152,25 @@ function akce()
   {
     unit.akce();
   }
+  for (let enemy of Object.values(enemy_units))
+  {
+    let select_x = 0;
+    let select_y = 0;
+    for (let dron of Object.values(drones))
+    {
+      if (dron.id == enemy.drones_id)
+      {
+        select_y = dron.y;
+        select_x = dron.x;
+      }
+    } 
+    enemy.move(select_x,select_y);
+    enemy.akce();
+  }
   draw();
 }
+/*}}}*/
 
-// draw all 
 function draw()
 //{{{
 {
@@ -1044,6 +1209,13 @@ function draw()
   if (big_select == 1)
   {
     draw_select_square(x_select_start,y_select_start,end_select_x,end_select_y);
+  }
+  if (zergling_rush == 1)
+  {
+    for (let enemy of Object.values(enemy_units))
+    {
+      enemy.draw();
+    }
   }
 }
 //}}}
@@ -1172,10 +1344,8 @@ function mousebutton(event)
      for (let dron of Object.values(drones))
      {
       
-       console.log("lgg");
        if (dron.am_I_selected == 1 && dron.building == 1) 
        {
-         console.log("loggg");
          for (let structure of Object.values(structures))
          {
            if (distance(structure.x,structure.y,x_click,y_click,150))
@@ -1591,10 +1761,10 @@ document.addEventListener("mousedown", function(event) {
   if (event.button == 0)
   {
     mousedown = true;
-    end_select_x = event.clientX;// - rect.left;
-    end_select_y = event.clientY;// - rect.top;
-    x_select_start = event.clientX;// - rect.left;
-    y_select_start = event.clientY;// - rect.top;
+    end_select_x = event.clientX;
+    end_select_y = event.clientY;
+    x_select_start = event.clientX;
+    y_select_start = event.clientY;
     setTimeout(() => {
       if (mousedown === true)
       {
@@ -1610,8 +1780,8 @@ document.addEventListener("mouseup", function(event) {
   big_select = 0;
   if (znaceni == 0) 
   {
-    x_select_start = 0;
     y_select_start = 0;
+    x_select_start = 0;
   }
   else
   {
@@ -1641,8 +1811,8 @@ document.addEventListener("mouseup", function(event) {
 document.addEventListener("mousemove", function(event) {
   if (mousedown && big_select === 1 && x_select_start != 0 && y_select_start != 0)
   {
-    end_select_x = event.clientX;// - rect.left;
-    end_select_y = event.clientY;// - rect.top;
+    end_select_x = event.clientX;
+    end_select_y = event.clientY;
   }
 });
 
@@ -1679,3 +1849,35 @@ function draw_select_square(x_s,y_s,x_e,y_e)
 //    y_screen += move_screen_y;  
 //  }
 //});
+
+function rush()
+{
+    let attacker_y = Math.floor(Math.random()*500);
+    zergling_rush = 1;
+    enemy = new Enemy_unit();
+    enemy.type = "zergling";  
+    enemy.x = 25;
+    enemy.y = attacker_y;
+    let droneslist = Object.values(drones);
+    let indexdron = Math.floor(Math.random()*droneslist.length)
+    enemy.select_dron = droneslist[indexdron];
+    enemy.drones_id = enemy.select_dron.id;
+    let select_x = enemy.select_dron.x;
+    let select_y = enemy.select_dron.y;
+    droneslist.splice(indexdron, 1);
+    enemy.move(select_x,select_y);
+}
+
+function wait_for_more_rush()
+{
+  setTimeout (() => {
+  let i = -1;
+  let number_f_r = Math.floor(Math.random()*4)+2;
+  while (i <= number_f_r)
+  {
+    rush();
+    i++
+  }
+  },146000);
+}
+

@@ -984,7 +984,7 @@ function distance(x,y,x1,y1,v)
 //}}}
 
 function rally_point_draw(x,y)
-{
+{/*{{{*/
   ctx.save();
   ctx.translate(x,y)
   
@@ -1000,17 +1000,18 @@ function rally_point_draw(x,y)
   ctx.stroke();
 
   ctx.restore();
-}
+}/*}}}*/
 
-build_length = {
+//build length of some things
+build_length = {/*{{{*/
   "dron": 150,
   "supply_chamber": 200,
   "zergling": 125,
   "zergling_speed": 210,
-}
+}/*}}}*/
 
 function load_sounds()
-{
+{/*{{{*/
   sounds = {
     "dron_select" : new Audio("res/dron_chrchlon.wav"),
     "dron_command1" : new Audio("res/dron_sound1.wav"),
@@ -1023,9 +1024,12 @@ function load_sounds()
     "zergling_command3" : new Audio("res/zergling3.wav"),
     "zergling_morph" : new Audio("res/zergling4.wav"),
   }
-}
+}/*}}}*/
 
-///variables,data and constants
+//Initialize
+
+//variables, values and dictionaries
+///variables,data and constants{{{
 const canvas = document.getElementById("plocha");
 const ctx = canvas.getContext("2d");
 
@@ -1076,11 +1080,15 @@ let x_drone = 450;
 let main_house_lifes = 1250;
 let ukol = "none";
 let building = "none";
+let znaceni = 0;/*}}}*/
 
+//function called in start
+/*{{{*/
 wait_for_more_rush();
+/*}}}*/
 
-// INIT
-
+//drones made and position 
+/*{{{*/
 for (let i = 0;i < 12;i++)
 {
   let dron = new Dron();
@@ -1091,8 +1099,10 @@ for (let dron of Object.values(drones))
 {
   dron.x += 350;
 }
+/*}}}*/
 
-
+//minerals made and position
+/*{{{*/
 for (let i = 0;i < 4;i++)
 {
   let position_x;
@@ -1116,6 +1126,7 @@ for (let i = 0;i < 4;i++)
 }
 
 const mineral_list = Object.values(minerals);
+/*}}}*/
 
 //go to work at start
 //{{{
@@ -1221,12 +1232,12 @@ function draw()
 //}}}
 
 //action call
-setInterval(akce,50);
+setInterval(akce,50);/*{{{*/
 
 function mousebutton(event)
 {
   return(event.button)
-}
+}/*}}}*/
 
 //selecting
 //{{{
@@ -1530,7 +1541,8 @@ canvas.addEventListener("contextmenu", function(event)
 });
 //}}}
 
-document.addEventListener("keyup", function(event)
+//keysdown control
+document.addEventListener("keyup", function(event)/*{{{*/
 {
 
     switch (event.key)
@@ -1563,11 +1575,10 @@ document.addEventListener("keyup", function(event)
       x_screen += 10;
       break;
     }
-});
-
+});/*}}}*/
 
 function new_dron()
-{
+{/*{{{*/
   if (main_house.queue.length < 5 && supply > supplied && mineralky >= 50)
   {
     mineralky -= 50;
@@ -1599,10 +1610,10 @@ function new_dron()
       },3500);      
     }
   }
-}
+}/*}}}*/
 
 function u_zergling_speed()
-{
+{/*{{{*/
   if (main_house.queue_2.length < 5 && mineralky >= 100)
   {
     mineralky -= 100;
@@ -1625,9 +1636,10 @@ function u_zergling_speed()
       },3500);      
     }
   }
-}
+}/*}}}*/
+
 function new_spool()
-{
+{/*{{{*/
   
   if (Object.values(select).length >= 1)
   {
@@ -1647,17 +1659,10 @@ function new_spool()
     document.getElementById("no_minerals").style.display = "none";
     },3500);
   }
-}
-new_drone_button.addEventListener("click", function() {
-  new_dron();
-});
-
-document.getElementById("build_spool").addEventListener("click", function() {
-  new_spool();
-});
+}/*}}}*/
 
 function build(x,y)
-{
+{/*{{{*/
   if (building == "spawn_pool")
   {
     supplied -= 1;
@@ -1668,10 +1673,10 @@ function build(x,y)
     structure.x = x;
     structure.y = y;
   }
-}
+}/*}}}*/
 
 function new_supply_chamber()
-{
+{/*{{{*/
   if (mineralky >= 100 && main_house.queue_2.length < 5)
   {
     mineralky -= 100;
@@ -1694,21 +1699,10 @@ function new_supply_chamber()
       },3500);  
     }
   }
-}
-document.getElementById("more_supply_button").addEventListener("click", function() {
-  new_supply_chamber();
-});
-
-document.getElementById("zergling_button").addEventListener("click", function() {
-  new_zergling();
-});
-
-document.getElementById("fast_zergling_button").addEventListener("click", function() {
-  u_zergling_speed();
-});
+}/*}}}*/
 
 function new_zergling()
-{
+{/*{{{*/
   if (mineralky >= 50 && main_house.queue.length < 5 && spawn_pool_exist == 1)
   {
     mineralky -= 50;
@@ -1753,11 +1747,10 @@ function new_zergling()
       },3500);  
     }
   }
-}
+}/*}}}*/
 
-let znaceni = 0;
-
-document.addEventListener("mousedown", function(event) {
+document.addEventListener("mousedown", function(event)
+{/*{{{*/
   if (event.button == 0)
   {
     mousedown = true;
@@ -1773,9 +1766,10 @@ document.addEventListener("mousedown", function(event) {
       }
     }, 100);
   }
-});
+});/*}}}*/
 
-document.addEventListener("mouseup", function(event) {
+document.addEventListener("mouseup", function(event)
+{/*{{{*/
   mousedown = false;
   big_select = 0;
   if (znaceni == 0) 
@@ -1806,18 +1800,19 @@ document.addEventListener("mouseup", function(event) {
       }
     }
   }
-});
+});/*}}}*/
 
-document.addEventListener("mousemove", function(event) {
+document.addEventListener("mousemove", function(event)
+{/*{{{*/
   if (mousedown && big_select === 1 && x_select_start != 0 && y_select_start != 0)
   {
     end_select_x = event.clientX;
     end_select_y = event.clientY;
   }
-});
+});/*}}}*/
 
 function draw_select_square(x_s,y_s,x_e,y_e)
-{
+{/*{{{*/
     ctx.save();
     ctx.beginPath();
 
@@ -1831,12 +1826,10 @@ function draw_select_square(x_s,y_s,x_e,y_e)
     ctx.closePath();
     ctx.stroke();
     ctx.restore();
-}
+}/*}}}*/
 
-
-
-
-
+//testing place all is comented
+/*{{{*/
 //canvas.addEventListener("mousedown", function(event)
 //{
 //  if (event.button === 1) 
@@ -1849,9 +1842,10 @@ function draw_select_square(x_s,y_s,x_e,y_e)
 //    y_screen += move_screen_y;  
 //  }
 //});
+/*}}}*/
 
 function rush()
-{
+{/*{{{*/
     let attacker_y = Math.floor(Math.random()*500);
     zergling_rush = 1;
     enemy = new Enemy_unit();
@@ -1866,10 +1860,10 @@ function rush()
     let select_y = enemy.select_dron.y;
     droneslist.splice(indexdron, 1);
     enemy.move(select_x,select_y);
-}
+}/*}}}*/
 
 function wait_for_more_rush()
-{
+{/*{{{*/
   setTimeout (() => {
   let i = -1;
   let number_f_r = Math.floor(Math.random()*4)+2;
@@ -1879,5 +1873,27 @@ function wait_for_more_rush()
     i++
   }
   },146000);
-}
+}/*}}}*/
 
+//buttons code
+/*{{{*/
+new_drone_button.addEventListener("click", function() {
+  new_dron();
+});
+
+document.getElementById("build_spool").addEventListener("click", function() {
+  new_spool();
+});
+
+document.getElementById("more_supply_button").addEventListener("click", function() {
+  new_supply_chamber();
+});
+
+document.getElementById("zergling_button").addEventListener("click", function() {
+  new_zergling();
+});
+
+document.getElementById("fast_zergling_button").addEventListener("click", function() {
+  u_zergling_speed();
+});
+/*}}}*/

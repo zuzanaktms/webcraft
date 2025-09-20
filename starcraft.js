@@ -5,6 +5,7 @@ class Enemy_unit
   constructor()
   /*{{{*/
   {
+    this.jsem_na_dosah = 0;
     this.drones_id = 0;
     this.type = "none";
     this.select_drone = 0;
@@ -17,6 +18,7 @@ class Enemy_unit
     this.x_cil = this.x;
     this.y_cil = this.y;
     this.speed = 7;
+    this.hit_damage = 5
     enemy_units[this.id] = this;
   }
 /*}}}*/
@@ -115,13 +117,13 @@ class Enemy_unit
         const d = Math.sqrt(xd*xd + yd*yd);
         if (d <= this.speed)
         {
-          this.x = this.x_cil;
-          this.y = this.y_cil;
+          this.jsem_na_dosah = 1;
         }
         else
         {  
           this.x += xd/d * this.speed;
           this.y += yd/d * this.speed;
+          this.jsem_na_dosah = 0;
 
           let rad_angle = Math.atan2(yd,xd);
           let deg_angle = rad_angle * 180 / Math.PI;
@@ -130,7 +132,21 @@ class Enemy_unit
       break;
     }
   }//}}}
-  
+
+  damage()
+  {/*{{{*/
+    if (this.jsem_na_dosah == 1)
+    {
+      for (let unit of Object.values(units))
+      {
+        if (unit.id == this.drones_id)
+        {
+          unit.life -= this.hit_damaga
+        }
+      }
+    }
+  }/*}}}*/
+
   move(x,y)
   {//{{{
     this.x_cil = x;
@@ -701,6 +717,7 @@ class Dron
     this.mineral = 0;
     this.x_cil = this.x;
     this.y_cil = this.y;
+    this.type = "dron";
  }//}}}
 
   draw()
@@ -1040,6 +1057,8 @@ canvas.setAttribute("width", sirka);
 canvas.setAttribute("height",vyska);
 
 // object dictionaries
+// all your units = alyoun
+let alyoun = {};
 let units = {};
 let minerals = {};
 let drones = {};
@@ -1231,8 +1250,17 @@ function draw()
 }
 //}}}
 
+function damage()
+{/*{{{*/
+  for (let enemy of Object.values(enemy_units))
+  {
+    enemy.damage();
+  }
+}/*}}}*/
+
 //action call
 setInterval(akce,50);/*{{{*/
+setInterval(damage,50);
 
 function mousebutton(event)
 {
@@ -1259,6 +1287,7 @@ function mousebutton(event)
        for (let unit of Object.values(units)) {
          unit.am_I_selected = 0;
        }
+       select = {};
        document.getElementById("ukazatel_velikosti_units").style.display = "none";
        document.getElementById("main_house_name").style.display = "none";
        document.getElementById("Hatchery_lifes").style.display = "none";
@@ -1276,7 +1305,6 @@ function mousebutton(event)
        document.getElementById("zergling_name").style.display = "none";
        document.getElementById("fast_zergling_button").style.display = "none";
        document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
-       select = {};
 
        for (let dron of Object.values(drones)) {
          if (dron.click_drone(x_click,y_click)) {
@@ -1770,15 +1798,16 @@ document.addEventListener("mousedown", function(event)
 
 document.addEventListener("mouseup", function(event)
 {/*{{{*/
-  mousedown = false;
   big_select = 0;
   if (znaceni == 0) 
   {
+    mousedown = false;
     y_select_start = 0;
     x_select_start = 0;
   }
-  else
+  else if (moousedown = true)
   {
+    mousedown = false;
     maxX = Math.max(x_select_start, end_select_x);
     maxY = Math.max(y_select_start, end_select_y);
     minX = Math.min(x_select_start, end_select_x);
@@ -1796,7 +1825,72 @@ document.addEventListener("mouseup", function(event)
       if (unit.x > minX && unit.x < maxX && unit.y > minY && unit.y < maxY)
       {
         unit.am_I_selected = 1;
-        select[unit.id] = unit;
+        if (unit.type == "zergling")
+        {
+          select[unit.id] = unit;
+        }
+      }
+    }
+    if (Object.keys(select).length >= 2)
+    {
+      for (let key in select)
+      {
+        document.getElementById("ukazatel_velikosti_units").style.display = "none";
+        document.getElementById("main_house_name").style.display = "none";
+        document.getElementById("Hatchery_lifes").style.display = "none";
+        document.getElementById("minerals_name").style.display = "none" 
+        document.getElementById("minerals_kapacita").style.display = "none";
+        document.getElementById("new_drone_button").style.display = "none";           
+        document.getElementById("build_spool").style.display = "none";
+        document.getElementById("drone_name").style.display = "none"
+        document.getElementById("drone_lifes").style.display = "none";
+        document.getElementById("more_supply_button").style.display = "none";
+        document.getElementById("spool_name").style.display = "none";
+        document.getElementById("spool_life").style.display = "none";
+        document.getElementById("zergling_button").style.display = "none";
+        document.getElementById("zergling_lifes").style.display = "none";
+        document.getElementById("zergling_name").style.display = "none";
+        document.getElementById("fast_zergling_button").style.display = "none";
+        document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
+        for (let key2 in select)
+        {
+          if (select[key2].type == "zergling")
+          {
+            if (select[key2].type == "dron")
+            {
+              document.getElementById("drone_name").style.display = "block";
+              for (let dron of Object.values(drones))
+              {
+              document.getElementById("drone_lifes").textContent = "Lifes:" + dron.life;
+              }
+              document.getElementById("drone_lifes").style.display = "block";
+              document.getElementById("build_spool").style.display = "block";
+              document.getElementById("minerals_name").style.display = "none" 
+              document.getElementById("minerals_kapacita").style.display = "none";
+            }
+            else if (select[key2].type == "zergling")
+            {
+              for (let unit of Object.values(units))
+              {
+              document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
+              }
+              document.getElementById("zergling_lifes").style.display = "block";
+              document.getElementById("zergling_name").style.display = "block";
+            }
+          }
+          else
+          {
+            document.getElementById("drone_name").style.display = "block";
+            for (let dron of Object.values(drones))
+            {
+            document.getElementById("drone_lifes").textContent = "Lifes:" + dron.life;
+            }
+            document.getElementById("drone_lifes").style.display = "block";
+            document.getElementById("build_spool").style.display = "block";
+            document.getElementById("minerals_name").style.display = "none" 
+            document.getElementById("minerals_kapacita").style.display = "none";          
+          }
+        }
       }
     }
   }
@@ -1897,3 +1991,4 @@ document.getElementById("fast_zergling_button").addEventListener("click", functi
   u_zergling_speed();
 });
 /*}}}*/
+

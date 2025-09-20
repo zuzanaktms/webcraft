@@ -137,11 +137,14 @@ class Enemy_unit
   {/*{{{*/
     if (this.jsem_na_dosah == 1)
     {
-      for (let unit of Object.values(units))
+      for (let unit of Object.values(all_your_units))
       {
         if (unit.id == this.drones_id)
         {
-          unit.life -= this.hit_damaga
+          if (unit.life > 0)
+          {
+            unit.life -= this.hit_damaga
+          }
         }
       }
     }
@@ -176,6 +179,7 @@ class Unit
     this.y_cil = this.y;
     this.type = "none";
     units[this.id] = this;
+    all_your_units[this.id] = this;
   }/*}}}*/
 
   draw()
@@ -705,6 +709,7 @@ class Dron
     this.building = 0;
     this.id = g_id++;
     drones[this.id] = this;
+    all_your_units[this.id] = this;
     this.am_I_selected = 0;
     this.my_mineral = 0;
     this.life = 45;
@@ -1058,7 +1063,7 @@ canvas.setAttribute("height",vyska);
 
 // object dictionaries
 // all your units = alyoun
-let alyoun = {};
+let all_your_units = {};
 let units = {};
 let minerals = {};
 let drones = {};
@@ -1209,6 +1214,23 @@ function draw()
       document.getElementById("ukazatel_velikosti_units").style.display = "block";
   }
   ctx.clearRect(0,0,1823,1004);
+  if (Object.keys(select).length == 1)
+  {
+    for (let unit of Object.values(all_your_units))
+    {
+      if (Object.values(select).includes(unit.id))
+      {
+        if (unit.type == "dron")
+        {
+          document.getElementById("dron_lifes").textContent = "Lifes:" + unit.lifes;
+        }
+        else
+        {
+          document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.lifes;
+        }
+      }
+    }
+  }
   document.getElementById("miner.").textContent = "Minerals:" + mineralky;
   document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
   document.getElementById("supply").textContent = "Supply:" + supplied + "/" + supply;
@@ -1260,7 +1282,7 @@ function damage()
 
 //action call
 setInterval(akce,50);/*{{{*/
-setInterval(damage,50);
+setInterval(damage,1000);
 
 function mousebutton(event)
 {
@@ -1966,7 +1988,7 @@ function wait_for_more_rush()
     rush();
     i++
   }
-  },146000);
+  },5000);
 }/*}}}*/
 
 //buttons code

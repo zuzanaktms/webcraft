@@ -14,11 +14,11 @@ class Enemy_unit
     this.angle = 0;
     this.velikost = 0;
     this.id = g_id++;
-    this.life = 0;
+    this.life = 40;
     this.x_cil = this.x;
     this.y_cil = this.y;
     this.speed = 7;
-    this.hit_damage = 5
+    this.hit_damage = 5;
     enemy_units[this.id] = this;
   }
 /*}}}*/
@@ -110,8 +110,40 @@ class Enemy_unit
     switch (this.action)
     {
     case "none":
+      if (this.life <= 0)
+      {
+        delete enemy_units[this.id]
+        console.log("smrt");
+      }
       break;
     case "move":     
+        if (this.life <= 0)
+        {
+          delete enemy_units[this.id]
+          console.log("smrt");
+        }
+        for (let dron of Object.values(drones))
+        {
+          if (drones.hasOwnProperty(this.drones_id))
+          {
+            this.x_cil = dron.x;
+            this.y_cil = dron.y;
+          }
+          else
+          {
+            this.jsem_na_dosah = 0;
+            this.x_cil = 0;  
+            this.y_cil = 0;
+            let droneslist = Object.values(drones);
+            let indexdron = Math.floor(Math.random()*droneslist.length)
+            this.select_dron = droneslist[indexdron];
+            this.drones_id = this.select_dron.id;
+            let select_x = this.select_dron.x;
+            let select_y = this.select_dron.y;
+            droneslist.splice(indexdron, 1);
+            this.move(select_x,select_y);
+          }
+        }
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
         const d = Math.sqrt(xd*xd + yd*yd);
@@ -143,7 +175,7 @@ class Enemy_unit
         {
           if (unit.life > 0)
           {
-            unit.life -= this.hit_damaga
+            unit.life -= 5;
           }
         }
       }
@@ -165,7 +197,10 @@ class Unit
 {
   constructor()
   {/*{{{*/
+    this.select_enemy_id = 0;
     this.velikost = 0;
+    this.figth = 0;
+    this.jsem_na_dosah = 0;
     this.x = 0;
     this.y = 0;
     this.life = 0;
@@ -277,15 +312,45 @@ class Unit
     switch (this.action)
     {
     case "none":
+      if (this.life <= 0)
+      {
+        supplied -= 1;
+        delete units[this.id]
+        delete all_your_units[this.id]
+      }
       break;
     case "move":     
+        if (this.figth == 1)
+        {
+          for (let enemy of Object.values(enemy_units))
+          {
+            if (enemy.id == this.select_enemy_id)
+            {
+              this.x_cil = enemy.x;
+              this.y_cil = enemy.y;
+            }
+          }
+        }
+        if (this.life <= 0)
+        {
+          supplied -= 1;
+          delete units[this.id]
+          delete all_your_units[this.id]
+        }
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
         const d = Math.sqrt(xd*xd + yd*yd);
         if (d <= this.speed)
         {
-          this.x = this.x_cil;
-          this.y = this.y_cil;
+          if (this.figth == 1) 
+          {
+            this.jsem_na_dosah = 1;
+          }
+          else
+          {
+            this.x = this.x_cil;
+            this.y = this.y_cil;
+          }
         }
         else
         {  
@@ -299,6 +364,26 @@ class Unit
       break;
     }
   }//}}}
+  
+  
+
+  damage()
+  {/*{{{*/
+    if (this.jsem_na_dosah == 1)
+    {
+      for (let enemy of Object.values(enemy_units))
+      {
+        if (enemy.id == this.select_enemy_id)
+        {
+          if (enemy.life > 0)
+          {
+            console.log("uder");
+            enemy.life -= 5;
+          }
+        }
+      }
+    }
+  }/*}}}*/
 
   move(x,y)
   {//{{{
@@ -831,8 +916,30 @@ class Dron
     switch (this.action)
     {
     case "none":
+      if (this.life <= 0)
+      {
+        if (this.am_I_selected == 1)
+        {
+          document.getElementById("build_spool").style.display = "none";
+          document.getElementById("drone_name").style.display = "none"
+          document.getElementById("drone_lifes").style.display = "none";
+        }
+        supplied -= 1;
+        delete drones[this.id]
+        delete all_your_units[this.id]
+      }
       break;
     case "move":     
+        if (this.life <= 0)
+        {
+          if (this.am_I_selected == 1)
+          {
+            document.getElementById("build_spool").style.display = "none";
+            document.getElementById("drone_name").style.display = "none"
+            document.getElementById("drone_lifes").style.display = "none";
+          }
+          delete drones[this.id]
+        }
         if (this.work == "go_home")
         {
           this.x_cil = 655;
@@ -861,7 +968,15 @@ class Dron
             break;
           case "building":    
             build(this.x,this.y);
+            if (this.am_I_selected == 1)
+            {
+              document.getElementById("build_spool").style.display = "none";
+              document.getElementById("drone_name").style.display = "none"
+              document.getElementById("drone_lifes").style.display = "none";
+            }
+            supplied - 1;
             delete drones[this.id]
+            delete all_your_units[this.id]
             break;
           default:
             this.action = "none";
@@ -1278,11 +1393,15 @@ function damage()
   {
     enemy.damage();
   }
+  for (let unit of Object.values(units))
+  {
+    unit.damage();
+  }
 }/*}}}*/
 
 //action call
 setInterval(akce,50);/*{{{*/
-setInterval(damage,1000);
+setInterval(damage,750);
 
 function mousebutton(event)
 {
@@ -1545,7 +1664,7 @@ canvas.addEventListener("mouseup", function(event)
     {
       if (unit.am_I_selected == 1)
       {
-        
+          
         //moving to the position of mouse  
         let sound = Math.floor(Math.random()*2);
         if (sound == 1)
@@ -1556,8 +1675,22 @@ canvas.addEventListener("mouseup", function(event)
         {
           sounds.zergling_command2.play();
         }
-        unit.action = "move";
-        unit.move(x,y)
+        for (let enemy of Object.values(enemy_units))
+        {
+          if (distance(enemy.x,enemy.y,x,y,100))
+          {
+            unit.action = "move";
+            unit.move(enemy.x,enemy.y);
+            unit.figth = 1;
+            unit.select_enemy_id = enemy.id;
+          }
+          else
+          {
+            unit.figth = 0;
+            unit.action = "move";
+            unit.move(x,y);
+          }
+        }
       }
     }
     for (let structure of Object.values(structures))

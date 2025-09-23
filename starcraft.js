@@ -122,28 +122,33 @@ class Enemy_unit
           delete enemy_units[this.id]
           console.log("smrt");
         }
-        for (let dron of Object.values(drones))
+        if (drones.hasOwnProperty(this.drones_id))
         {
-          if (drones.hasOwnProperty(this.drones_id))
+          let dron = drones[this.drones_id];
+
+          this.x_cil = dron.x;
+          this.y_cil = dron.y;
+        }
+        else
+        {
+          this.jsem_na_dosah = 0;
+          this.x_cil = 0;  
+          this.y_cil = 0;
+
+          if (Object.keys(drones).length > 0)
           {
-            this.x_cil = dron.x;
-            this.y_cil = dron.y;
-          }
-          else
-          {
-            this.jsem_na_dosah = 0;
-            this.x_cil = 0;  
-            this.y_cil = 0;
             let droneslist = Object.values(drones);
             let indexdron = Math.floor(Math.random()*droneslist.length)
             this.select_dron = droneslist[indexdron];
             this.drones_id = this.select_dron.id;
-            let select_x = this.select_dron.x;
-            let select_y = this.select_dron.y;
-            droneslist.splice(indexdron, 1);
-            this.move(select_x,select_y);
+            this.move(this.select_dron.x,this.select_dron.y);
+          }
+          else
+          {
+            this.move(0,0);
           }
         }
+
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
         const d = Math.sqrt(xd*xd + yd*yd);
@@ -1419,14 +1424,11 @@ function mousebutton(event)
    if (ukol == "none")
    {//{{{
      if (mousebutton(event) == 0) {
-       for (let dron of Object.values(drones)) {
-         dron.am_I_selected = 0;
+       for (let unit of Object.values(all_your_units)) {
+         unit.am_I_selected = 0;
        }
        for (let structure of Object.values(structures)) {
          structure.am_I_selected = 0;
-       }
-       for (let unit of Object.values(units)) {
-         unit.am_I_selected = 0;
        }
        select = {};
        document.getElementById("ukazatel_velikosti_units").style.display = "none";
@@ -2101,14 +2103,7 @@ function rush()
     enemy.type = "zergling";  
     enemy.x = 25;
     enemy.y = attacker_y;
-    let droneslist = Object.values(drones);
-    let indexdron = Math.floor(Math.random()*droneslist.length)
-    enemy.select_dron = droneslist[indexdron];
-    enemy.drones_id = enemy.select_dron.id;
-    let select_x = enemy.select_dron.x;
-    let select_y = enemy.select_dron.y;
-    droneslist.splice(indexdron, 1);
-    enemy.move(select_x,select_y);
+    enemy.action = "move";
 }/*}}}*/
 
 function wait_for_more_rush()

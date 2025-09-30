@@ -2011,6 +2011,7 @@ document.getElementById("fast_zergling_button").addEventListener("click", functi
 });
 /*}}}*/
 
+//dolble click select
 document.addEventListener("mousedown", function(event)
 {/*{{{*/
   if (event.button == 0)

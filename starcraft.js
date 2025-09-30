@@ -5,8 +5,8 @@ class Enemy_unit
   constructor()
   /*{{{*/
   {
-    this.jsem_na_dosah = 0;
-    this.drones_id = 0;
+    this.can_i_hit = 0;
+    this.target_id = 0;
     this.type = "none";
     this.select_drone = 0;
     this.x = 0;
@@ -121,46 +121,19 @@ class Enemy_unit
         {
           delete enemy_units[this.id]
           console.log("smrt");
+          break;
         }
-        if (drones.hasOwnProperty(this.drones_id))
-        {
-          let dron = drones[this.drones_id];
-
-          this.x_cil = dron.x;
-          this.y_cil = dron.y;
-        }
-        else
-        {
-          this.jsem_na_dosah = 0;
-          this.x_cil = 0;  
-          this.y_cil = 0;
-
-          if (Object.keys(drones).length > 0)
-          {
-            let droneslist = Object.values(drones);
-            let indexdron = Math.floor(Math.random()*droneslist.length)
-            this.select_dron = droneslist[indexdron];
-            this.drones_id = this.select_dron.id;
-            this.move(this.select_dron.x,this.select_dron.y);
-          }
-          else
-          {
-            this.move(0,0);
-          }
-        }
-
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
         const d = Math.sqrt(xd*xd + yd*yd);
         if (d <= this.speed)
         {
-          this.jsem_na_dosah = 1;
+          this.can_i_hit = 1;
         }
         else
         {  
           this.x += xd/d * this.speed;
           this.y += yd/d * this.speed;
-          this.jsem_na_dosah = 0;
 
           let rad_angle = Math.atan2(yd,xd);
           let deg_angle = rad_angle * 180 / Math.PI;
@@ -169,23 +142,6 @@ class Enemy_unit
       break;
     }
   }//}}}
-
-  damage()
-  {/*{{{*/
-    if (this.jsem_na_dosah == 1)
-    {
-      for (let unit of Object.values(all_your_units))
-      {
-        if (unit.id == this.drones_id)
-        {
-          if (unit.life > 0)
-          {
-            unit.life -= 5;
-          }
-        }
-      }
-    }
-  }/*}}}*/
 
   move(x,y)
   {//{{{
@@ -202,10 +158,7 @@ class Unit
 {
   constructor()
   {/*{{{*/
-    this.select_enemy_id = 0;
     this.velikost = 0;
-    this.figth = 0;
-    this.jsem_na_dosah = 0;
     this.x = 0;
     this.y = 0;
     this.life = 0;
@@ -325,37 +278,13 @@ class Unit
       }
       break;
     case "move":     
-        if (this.figth == 1)
-        {
-          for (let enemy of Object.values(enemy_units))
-          {
-            if (enemy.id == this.select_enemy_id)
-            {
-              this.x_cil = enemy.x;
-              this.y_cil = enemy.y;
-            }
-          }
-        }
-        if (this.life <= 0)
-        {
-          supplied -= 1;
-          delete units[this.id]
-          delete all_your_units[this.id]
-        }
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
         const d = Math.sqrt(xd*xd + yd*yd);
         if (d <= this.speed)
         {
-          if (this.figth == 1) 
-          {
-            this.jsem_na_dosah = 1;
-          }
-          else
-          {
-            this.x = this.x_cil;
-            this.y = this.y_cil;
-          }
+          this.x = this.x_cil;
+          this.y = this.y_cil;
         }
         else
         {  
@@ -369,26 +298,6 @@ class Unit
       break;
     }
   }//}}}
-  
-  
-
-  damage()
-  {/*{{{*/
-    if (this.jsem_na_dosah == 1)
-    {
-      for (let enemy of Object.values(enemy_units))
-      {
-        if (enemy.id == this.select_enemy_id)
-        {
-          if (enemy.life > 0)
-          {
-            console.log("uder");
-            enemy.life -= 5;
-          }
-        }
-      }
-    }
-  }/*}}}*/
 
   move(x,y)
   {//{{{
@@ -1182,7 +1091,6 @@ canvas.setAttribute("width", sirka);
 canvas.setAttribute("height",vyska);
 
 // object dictionaries
-// all your units = alyoun
 let all_your_units = {};
 let units = {};
 let minerals = {};
@@ -1225,6 +1133,7 @@ let main_house_lifes = 1250;
 let ukol = "none";
 let building = "none";
 let znaceni = 0;/*}}}*/
+let clicks = 0;
 
 //function called in start
 /*{{{*/
@@ -1313,7 +1222,7 @@ function akce()
     let select_y = 0;
     for (let dron of Object.values(drones))
     {
-      if (dron.id == enemy.drones_id)
+      if (dron.id == enemy.target_id)
       {
         select_y = dron.y;
         select_x = dron.x;
@@ -1334,23 +1243,6 @@ function draw()
       document.getElementById("ukazatel_velikosti_units").style.display = "block";
   }
   ctx.clearRect(0,0,1823,1004);
-  if (Object.keys(select).length == 1)
-  {
-    for (let unit of Object.values(all_your_units))
-    {
-      if (Object.values(select).includes(unit.id))
-      {
-        if (unit.type == "dron")
-        {
-          document.getElementById("dron_lifes").textContent = "Lifes:" + unit.lifes;
-        }
-        else
-        {
-          document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.lifes;
-        }
-      }
-    }
-  }
   document.getElementById("miner.").textContent = "Minerals:" + mineralky;
   document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
   document.getElementById("supply").textContent = "Supply:" + supplied + "/" + supply;
@@ -1392,21 +1284,8 @@ function draw()
 }
 //}}}
 
-function damage()
-{/*{{{*/
-  for (let enemy of Object.values(enemy_units))
-  {
-    enemy.damage();
-  }
-  for (let unit of Object.values(units))
-  {
-    unit.damage();
-  }
-}/*}}}*/
-
 //action call
 setInterval(akce,50);/*{{{*/
-setInterval(damage,750);
 
 function mousebutton(event)
 {
@@ -1666,7 +1545,7 @@ canvas.addEventListener("mouseup", function(event)
     {
       if (unit.am_I_selected == 1)
       {
-          
+        
         //moving to the position of mouse  
         let sound = Math.floor(Math.random()*2);
         if (sound == 1)
@@ -1677,22 +1556,8 @@ canvas.addEventListener("mouseup", function(event)
         {
           sounds.zergling_command2.play();
         }
-        for (let enemy of Object.values(enemy_units))
-        {
-          if (distance(enemy.x,enemy.y,x,y,100))
-          {
-            unit.action = "move";
-            unit.move(enemy.x,enemy.y);
-            unit.figth = 1;
-            unit.select_enemy_id = enemy.id;
-          }
-          else
-          {
-            unit.figth = 0;
-            unit.action = "move";
-            unit.move(x,y);
-          }
-        }
+        unit.action = "move";
+        unit.move(x,y)
       }
     }
     for (let structure of Object.values(structures))
@@ -2097,9 +1962,13 @@ function draw_select_square(x_s,y_s,x_e,y_e)
 
 function rush()
 {/*{{{*/
-    let attacker_y = Math.floor(Math.random()*500);
-    zergling_rush = 1;
     enemy = new Enemy_unit();
+    let attacker_y = Math.floor(Math.random()*500);
+    let length_of_drones = Object.keys(drones).length;
+    let target = Math.floor(Math.random() * length_of_drones) - 1;
+    zergling_rush = 1;
+    enemy.target_id = drones[target].id;
+    enemy.target = drones[target];
     enemy.type = "zergling";  
     enemy.x = 25;
     enemy.y = attacker_y;
@@ -2141,4 +2010,56 @@ document.getElementById("fast_zergling_button").addEventListener("click", functi
   u_zergling_speed();
 });
 /*}}}*/
+
+document.addEventListener("mousedown", function(event)
+{/*{{{*/
+  if (event.button == 0)
+  {
+    clicks += 1;
+    setTimeout(() => {
+      if (clicks == 2)
+      {
+         const rect = canvas.getBoundingClientRect();
+         const x_click = event.clientX - rect.left;
+         const y_click = event.clientY - rect.top;
+         for (let dron of Object.values(drones))
+         {
+           if (dron.click_drone(x_click,y_click)) 
+           {
+             for (let dron of Object.values(drones))
+             {
+               dron.am_I_selected = 1;
+               select[dron.id] = dron;
+             }
+             document.getElementById("drone_name").style.display = "block";
+             document.getElementById("drone_lifes").textContent = "Lifes:" + dron.life;
+             document.getElementById("drone_lifes").style.display = "block";
+             document.getElementById("build_spool").style.display = "block";
+             document.getElementById("minerals_name").style.display = "none" 
+             document.getElementById("minerals_kapacita").style.display = "none";
+             sounds.dron_select.play();
+             clicks = 0;
+           }
+         }
+         for (let unit of Object.values(units))
+         {
+           if (unit.click_zergling(x_click,y_click) && unit.type == "zergling")
+           {
+             for (let unit of Object.values(units))
+             {
+               unit.am_I_selected = 1;
+               select[unit.id] = unit;
+             }
+             document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
+             document.getElementById("zergling_lifes").style.display = "block";
+             document.getElementById("zergling_name").style.display = "block";
+             sounds.dron_select.play();
+             clicks = 0;
+           }
+         }
+      }
+      clicks = 0;
+    }, 200);
+  }
+});/*}}}*/
 

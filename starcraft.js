@@ -1799,7 +1799,8 @@ function new_zergling()
   }
 }/*}}}*/
 
-document.addEventListener("mousedown", function(event)
+//multiple select code
+document.addEventListener("mousedown", function(event)/*{{{*/
 {/*{{{*/
   if (event.button == 0)
   {
@@ -1925,7 +1926,7 @@ document.addEventListener("mousemove", function(event)
     end_select_x = event.clientX;
     end_select_y = event.clientY;
   }
-});/*}}}*/
+});/*}}}*//*}}}*/
 
 function draw_select_square(x_s,y_s,x_e,y_e)
 {/*{{{*/
@@ -1965,10 +1966,11 @@ function rush()
     enemy = new Enemy_unit();
     let attacker_y = Math.floor(Math.random()*500);
     let length_of_drones = Object.keys(drones).length;
-    let target = Math.floor(Math.random() * length_of_drones) - 1;
+    let target = Math.floor(Math.random() * length_of_drones);
     zergling_rush = 1;
     enemy.target_id = drones[target].id;
     enemy.target = drones[target];
+    console.log(target);
     enemy.type = "zergling";  
     enemy.x = 25;
     enemy.y = attacker_y;

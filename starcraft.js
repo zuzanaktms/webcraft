@@ -1375,9 +1375,9 @@ function mousebutton(event)
              document.getElementById("spool_life").textContent = "Lifes:" + structure.life;
              document.getElementById("ukazatel_velikosti_units").style.display = "block";
              document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
-             if (structure.stadium >= 100)
+             if (structure.stadium >= 100 && zergling_speed == 0)
              {
-             document.getElementById("fast_zergling_button").style.display = "block";
+               document.getElementById("fast_zergling_button").style.display = "block";
              }
              break;
            }
@@ -1610,21 +1610,24 @@ document.addEventListener("keyup", function(event)/*{{{*/
       new_spool();
       break;
     case "w":
-      u_zergling_speed();
+      if (zergling_speed == 0)
+      {
+        u_zergling_speed();
+      }
       break;
-    case "ArrowDown":
-      y_screen -= 10;
-      break;
-    case "ArrowUp":
-      y_screen += 10;
-      break;
-    case "ArrowLeft":
-      x_screen -= 10;
-      break;
-    case "ArrowRight":
-      x_screen += 10;
-      break;
-    }
+//    case "ArrowDown":
+//      y_screen -= 10;
+//      break;
+//    case "ArrowUp":
+//      y_screen += 10;
+//      break;
+//   case "ArrowLeft":
+//      x_screen -= 10;
+//      break;
+//    case "ArrowRight":
+//      x_screen += 10;
+//      break;
+   }
 });/*}}}*/
 
 function new_dron()
@@ -1965,12 +1968,12 @@ function rush()
 {/*{{{*/
     enemy = new Enemy_unit();
     let attacker_y = Math.floor(Math.random()*500);
-    let length_of_drones = Object.keys(drones).length;
-    let target = Math.floor(Math.random() * length_of_drones);
+    let drone_ids = Object.keys(drones);
+    let id_idx = Math.floor(Math.random() * drone_ids.length);
+    let target = drone_ids[id_idx];
     zergling_rush = 1;
     enemy.target_id = drones[target].id;
     enemy.target = drones[target];
-    console.log(target);
     enemy.type = "zergling";  
     enemy.x = 25;
     enemy.y = attacker_y;
@@ -1987,7 +1990,7 @@ function wait_for_more_rush()
     rush();
     i++
   }
-  },5000);
+  },25000);
 }/*}}}*/
 
 //buttons code

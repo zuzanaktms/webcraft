@@ -5,7 +5,6 @@ class Enemy_unit
   constructor()
   /*{{{*/
   {
-    this.can_i_hit = 0;
     this.target_id = 0;
     this.type = "none";
     this.select_drone = 0;
@@ -20,6 +19,7 @@ class Enemy_unit
     this.speed = 7;
     this.hit_damage = 5;
     enemy_units[this.id] = this;
+    this.hit_speed = 0;
   }
 /*}}}*/
 
@@ -117,6 +117,17 @@ class Enemy_unit
       }
       break;
     case "move":     
+        if (!drones.hasOwnProperty(this.target_id) && Object.keys(drones).length > 0)
+        {
+          this.target_id = 0;
+          this.target = 0;
+          let drone_ids = Object.keys(drones);
+          let id_idx = Math.floor(Math.random() * drone_ids.length);
+          let target = drone_ids[id_idx];
+          this.target_id = drones[target].id;
+          this.target = drones[target];
+          this.action = "move";
+        }
         if (this.life <= 0)
         {
           delete enemy_units[this.id]
@@ -128,7 +139,25 @@ class Enemy_unit
         const d = Math.sqrt(xd*xd + yd*yd);
         if (d <= this.speed)
         {
-          this.can_i_hit = 1;
+          if (this.hit_speed == 0)
+          {
+            for (let dron of Object.values(drones))
+            {
+              if (dron.id == this.target_id)
+              {
+                dron.life -= this.hit_damage;
+                this.hit_speed = 1;
+              }
+            }
+          }
+          else
+          { 
+            this.hit_speed += 1;
+            if (this.hit_speed == 15)
+            {
+              this.hit_speed = 0;
+            }
+          }
         }
         else
         {  
@@ -157,7 +186,12 @@ class Enemy_unit
 class Unit
 {
   constructor()
-  {/*{{{*/
+  {/*zc{{{*/
+    this.figth = 0;
+    this.hit_speed = 0;
+    this.target_id = 0;
+    this.target = 0;
+    this.hit_damega = 5;
     this.velikost = 0;
     this.x = 0;
     this.y = 0;
@@ -283,8 +317,39 @@ class Unit
         const d = Math.sqrt(xd*xd + yd*yd);
         if (d <= this.speed)
         {
-          this.x = this.x_cil;
-          this.y = this.y_cil;
+          if (this.figth == 0)
+          {
+            this.x = this.x_cil;
+            this.y = this.y_cil;
+          }
+          else
+          {
+          if (this.hit_speed == 0)
+          {
+            for (let enemy of Object.values(enemy_units))
+            {
+              if (enemy.id == this.target_id)
+              {
+                enemy.life -= this.hit_damega;
+                if (enemy.life <= 0)
+                {
+                  this.figth = 0;
+                }
+                console.log(enemy.life);
+                this.hit_speed = 1;
+              }
+            }
+          }
+          else
+          { 
+            this.hit_speed += 1;
+            if (this.hit_speed == 13)
+            {
+              this.hit_speed = 0;
+            }
+          }
+            
+          }
         }
         else
         {  
@@ -1132,8 +1197,8 @@ let x_drone = 450;
 let main_house_lifes = 1250;
 let ukol = "none";
 let building = "none";
-let znaceni = 0;/*}}}*/
 let clicks = 0;
+let znaceni = 0;/*}}}*/
 
 //function called in start
 /*{{{*/
@@ -1230,6 +1295,19 @@ function akce()
     } 
     enemy.move(select_x,select_y);
     enemy.akce();
+  }
+  for (let unit of Object.values(units))
+  {
+    if (unit.figth == 1)
+    {
+      for (let enemy of Object.values(enemy_units))
+      {
+        if (enemy.id == unit.target_id)
+        {
+          unit.move(enemy.x,enemy.y);
+        }
+      }
+    }
   }
   draw();
 }
@@ -1556,8 +1634,30 @@ canvas.addEventListener("mouseup", function(event)
         {
           sounds.zergling_command2.play();
         }
-        unit.action = "move";
-        unit.move(x,y)
+        if (Object.keys(enemy_units).length > 0)
+        {
+          for (let enemy of Object.values(enemy_units))
+          {
+            if (distance(enemy.x,enemy.y,x,y,40))
+            {
+              unit.figth = 1;
+              unit.target_id = enemy.id;
+              unit.move(enemy.x,enemy.y)
+            }
+            else
+            {
+              unit.figth = 0;
+              unit.action = "move";
+              unit.move(x,y)
+            }
+          }
+        }
+        else
+        {
+          unit.figth = 0;
+          unit.action = "move";
+          unit.move(x,y)
+        }
       }
     }
     for (let structure of Object.values(structures))
@@ -1722,7 +1822,7 @@ function build(x,y)
     mineralky -= 150;
     structure = new Structure();
     structure.type = building;
-    structure.life = 850;
+    structure.life = 900;
     structure.x = x;
     structure.y = y;
   }
@@ -1990,7 +2090,7 @@ function wait_for_more_rush()
     rush();
     i++
   }
-  },25000);
+  }, 20000);
 }/*}}}*/
 
 //buttons code

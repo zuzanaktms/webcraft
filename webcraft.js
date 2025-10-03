@@ -1561,7 +1561,7 @@ function mousebutton(event)
   });
 //}}}
   
-//move after click to right button of mouse
+//action after click to right button of mouse
 //{{{
 canvas.addEventListener("mouseup", function(event)
 {

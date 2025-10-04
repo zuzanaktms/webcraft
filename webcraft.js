@@ -191,7 +191,7 @@ class Unit
     this.hit_speed = 0;
     this.target_id = 0;
     this.target = 0;
-    this.hit_damega = 5;
+    this.nhit_damage = 5;
     this.velikost = 0;
     this.x = 0;
     this.y = 0;
@@ -330,7 +330,7 @@ class Unit
             {
               if (enemy.id == this.target_id)
               {
-                enemy.life -= this.hit_damega;
+                enemy.life -= this.hit_damage;
                 if (enemy.life <= 0)
                 {
                   this.figth = 0;
@@ -619,6 +619,105 @@ class Structure
       
     }
     }
+    if (this.type == "evo_cham")
+    {
+      if (this.stadium == 100)
+      {
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        
+        //body of house
+        ctx.beginPath();
+        ctx.moveTo(-70,0);
+        ctx.lineTo(-60,-25);
+        ctx.lineTo(-30,-35);
+        ctx.lineTo(30,-35);
+        ctx.lineTo(60,-25);
+        ctx.lineTo(70,0);
+        ctx.lineTo(60,25);
+        ctx.lineTo(30,35);
+        ctx.lineTo(-30,35);
+        ctx.lineTo(-60,25);
+        ctx.lineTo(-70,0);
+        ctx.closePath();
+        ctx.fillStyle = "purple";
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(15,12, 20, 0,2 * Math.PI);
+        ctx.fillStyle = "#e3b6cc";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(-45,-10, 15, 0,2 * Math.PI);
+        ctx.fillStyle = "#e3b6cc";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(20,-17, 7, 0,2 * Math.PI);
+        ctx.fillStyle = "#e3b6cc";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(-20,10, 7, 0,2 * Math.PI);
+        ctx.fillStyle = "#e3b6cc";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(-5,-15, 7, 0,2 * Math.PI);
+        ctx.fillStyle = "#e3b6cc";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.restore();
+      }
+      if (this.stadium != 100)
+        {
+          ctx.save();
+          ctx.translate(this.x,this.y);
+          if (this.stadium == 5 || this.stadium == 15 || this.stadium == 25 || this.stadium == 35 || this.stadium == 45 || this.stadium == 55 || this.stadium == 65 || this.stadium == 75 || this.stadium == 85 || this.stadium == 95)
+          {
+            ctx.scale(1,1);
+          }
+          else if  (this.stadium == 0 || this.stadium == 10 || this.stadium == 20 || this.stadium == 30 || this.stadium == 40 || this.stadium == 50 || this.stadium == 60 || this.stadium == 70 || this.stadium == 80 || this.stadium == 90)
+          {
+            ctx.scale(0.8,0.8);
+          }
+          if (this.stadium <= 99)
+          {
+            ctx.beginPath();
+            ctx.moveTo(0,0);
+            ctx.moveTo(-70,0);
+            ctx.lineTo(-50,-45);
+            ctx.lineTo(-21,-60);
+            ctx.lineTo(-10,-55);
+            ctx.lineTo(20,-47);
+            ctx.lineTo(40,-30);
+            ctx.lineTo(72,3);
+            ctx.lineTo(55,20);
+            ctx.lineTo(30,30);
+            ctx.lineTo(-2,33);
+            ctx.lineTo(-35,36);
+            ctx.lineTo(-70,0);
+            ctx.closePath();
+            ctx.fillStyle = "#741B47";
+            ctx.fill();
+            ctx.stroke();
+          }
+          ctx.restore();
+        
+      }
+    }
   }//}}}
 
   build_units()
@@ -666,6 +765,14 @@ class Structure
             else
             {
               zergling.speed = 7;
+            }
+            if (damega_upgrade == 1)
+            {
+              zergling.hit_damage = 6;
+            }
+            else
+            {
+              zergling.hit_damage= 5;
             }
             break;
           default:
@@ -736,6 +843,13 @@ class Structure
             setTimeout(() => {
             document.getElementById("upradge_complete").style.display = "none";
             },3500);
+            break;
+          case "damega":
+            damega_upgrade = 1;
+            for (let unit of Object.values(units))
+            {
+              unit.hit_damage += 1;
+            }
             break;
           default:
             alert("undefined build/unit")
@@ -914,6 +1028,7 @@ class Dron
           if (this.am_I_selected == 1)
           {
             document.getElementById("build_spool").style.display = "none";
+            document.getElementById("build_evocham").style.display = "none";
             document.getElementById("drone_name").style.display = "none"
             document.getElementById("drone_lifes").style.display = "none";
           }
@@ -1124,6 +1239,7 @@ build_length = {/*{{{*/
   "supply_chamber": 200,
   "zergling": 125,
   "zergling_speed": 210,
+  "damega": 225,
 }/*}}}*/
 
 function load_sounds()
@@ -1198,6 +1314,7 @@ let main_house_lifes = 1250;
 let ukol = "none";
 let building = "none";
 let clicks = 0;
+let damega_upgrade = 0;
 let znaceni = 0;/*}}}*/
 
 //function called in start
@@ -1390,11 +1507,15 @@ function mousebutton(event)
        select = {};
        document.getElementById("ukazatel_velikosti_units").style.display = "none";
        document.getElementById("main_house_name").style.display = "none";
+       document.getElementById("evocham_name").style.display = "none";
+       document.getElementById("evocham_life").style.display = "none";
        document.getElementById("Hatchery_lifes").style.display = "none";
        document.getElementById("minerals_name").style.display = "none" 
        document.getElementById("minerals_kapacita").style.display = "none";
        document.getElementById("new_drone_button").style.display = "none";           
        document.getElementById("build_spool").style.display = "none";
+       document.getElementById("build_evocham").style.display = "none";
+       document.getElementById("more_damega").style.display = "none";
        document.getElementById("drone_name").style.display = "none"
        document.getElementById("drone_lifes").style.display = "none";
        document.getElementById("more_supply_button").style.display = "none";
@@ -1413,6 +1534,7 @@ function mousebutton(event)
            document.getElementById("drone_lifes").textContent = "Lifes:" + dron.life;
            document.getElementById("drone_lifes").style.display = "block";
            document.getElementById("build_spool").style.display = "block";
+           document.getElementById("build_evocham").style.display = "block";
            document.getElementById("minerals_name").style.display = "none" 
            document.getElementById("minerals_kapacita").style.display = "none";
            sounds.dron_select.play();
@@ -1458,6 +1580,14 @@ function mousebutton(event)
                document.getElementById("fast_zergling_button").style.display = "block";
              }
              break;
+           }
+           else if (structure.type == "evo_cham")
+           {
+             select[structure.id] = structure.type;
+             document.getElementById("evocham_name").style.display = "block";
+             document.getElementById("evocham_life").style.display = "block";
+             document.getElementById("evocham_life").textContent = "Lifes:" + structure.life;
+             document.getElementById("more_damega").style.display = "block";
            }
          }
        }
@@ -1709,24 +1839,15 @@ document.addEventListener("keyup", function(event)/*{{{*/
     case "s":
       new_spool();
       break;
+    case "e":
+      new_evocham();
+      break;
     case "w":
       if (zergling_speed == 0)
       {
         u_zergling_speed();
       }
       break;
-//    case "ArrowDown":
-//      y_screen -= 10;
-//      break;
-//    case "ArrowUp":
-//      y_screen += 10;
-//      break;
-//   case "ArrowLeft":
-//      x_screen -= 10;
-//      break;
-//    case "ArrowRight":
-//      x_screen += 10;
-//      break;
    }
 });/*}}}*/
 
@@ -1791,6 +1912,32 @@ function u_zergling_speed()
   }
 }/*}}}*/
 
+function u_damega()
+{/*{{{*/
+  if (main_house.queue_2.length < 5 && mineralky >= 100)
+  {
+    mineralky -= 100;
+    main_house.queue_2.push("damega");
+  }
+  else
+  {
+    if (mineralky < 100)
+    {
+      document.getElementById("no_minerals").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("no_minerals").style.display = "none";
+      },3500);      
+    }
+    else
+    {
+      document.getElementById("full_queue").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("full_queue").style.display = "none";
+      },3500);      
+    }
+  }
+}/*}}}*/
+
 function new_spool()
 {/*{{{*/
   
@@ -1814,6 +1961,29 @@ function new_spool()
   }
 }/*}}}*/
 
+function new_evocham()
+{/*{{{*/
+  
+  if (Object.values(select).length >= 1)
+  {
+      let dron = Object.values(select)[0];
+      dron.building = 1;
+  }
+
+  if (mineralky >= 100)
+  {  
+    building = "evo_cham";
+    ukol = "building";
+  }
+  else
+  {
+    document.getElementById("no_minerals").style.display = "block";
+    setTimeout(() => {
+    document.getElementById("no_minerals").style.display = "none";
+    },3500);
+  }
+}/*}}}*/
+
 function build(x,y)
 {/*{{{*/
   if (building == "spawn_pool")
@@ -1823,6 +1993,15 @@ function build(x,y)
     structure = new Structure();
     structure.type = building;
     structure.life = 900;
+    structure.x = x;
+    structure.y = y;
+  }
+  else if (building == "evo_cham")
+  {
+    mineralky -= 100;
+    structure = new Structure();
+    structure.type = building;
+    structure.life = 500;
     structure.x = x;
     structure.y = y;
   }
@@ -1978,6 +2157,7 @@ document.addEventListener("mouseup", function(event)
         document.getElementById("zergling_name").style.display = "none";
         document.getElementById("fast_zergling_button").style.display = "none";
         document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
+        document.getElementById("build_evocham").style.display = "none";
         for (let key2 in select)
         {
           if (select[key2].type == "zergling")
@@ -1991,6 +2171,7 @@ document.addEventListener("mouseup", function(event)
               }
               document.getElementById("drone_lifes").style.display = "block";
               document.getElementById("build_spool").style.display = "block";
+              document.getElementById("build_evocham").style.display = "block";
               document.getElementById("minerals_name").style.display = "none" 
               document.getElementById("minerals_kapacita").style.display = "none";
             }
@@ -2013,6 +2194,7 @@ document.addEventListener("mouseup", function(event)
             }
             document.getElementById("drone_lifes").style.display = "block";
             document.getElementById("build_spool").style.display = "block";
+            document.getElementById("build_evocham").style.display = "block";
             document.getElementById("minerals_name").style.display = "none" 
             document.getElementById("minerals_kapacita").style.display = "none";          
           }
@@ -2113,6 +2295,14 @@ document.getElementById("zergling_button").addEventListener("click", function() 
 
 document.getElementById("fast_zergling_button").addEventListener("click", function() {
   u_zergling_speed();
+});
+
+document.getElementById("build_evocham").addEventListener("click", function() {
+  new_evocham();
+});
+
+document.getElementById("more_damega").addEventListener("click", function() {
+  u_damega();
 });
 /*}}}*/
 

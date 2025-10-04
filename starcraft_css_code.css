@@ -125,3 +125,32 @@ body {
   margin: 0;
 }
 
+#build_evocham {
+  background-color:#FFFFFF;
+  color:black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition: background-color 0.3s;
+}
+
+#build_evocham:hover {
+  background-color:#5b5b5b;
+}
+
+#more_damega {
+   background-color:#FFFFFF;
+   color:black;
+   padding:10px 10px;
+   font-size:15px;
+   border:2px solid black;
+   border-radius:6px;
+   cursor:pointer;
+   transition: background-color 0.3s;
+ }
+ 
+ #more_damega:hover {
+   background-color:#5b5b5b;
+ }

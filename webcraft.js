@@ -151,17 +151,28 @@ class Enemy_unit
       }
       break;
     case "move":     
+        let drone_ids = Object.keys(drones);
         if (!drones.hasOwnProperty(this.target_id) && Object.keys(drones).length > 0)
         {
           this.target_id = 0;
           this.target = 0;
-          let drone_ids = Object.keys(drones);
           let id_idx = Math.floor(Math.random() * drone_ids.length);
           let target = drone_ids[id_idx];
           this.target_id = drones[target].id;
           this.target = drones[target];
           this.action = "move";
         }
+//        if (drone_ids.length == 0)
+//        {
+//          enemy = new Enemy_unit();
+//          let attacker_y = Math.floor(Math.random()*500);
+//          let units_ids = Object.keys(drones);
+//          let id_idx = Math.floor(Math.random() * units_ids.length);
+//          let target = units_ids[id_idx];
+//          this.target_id = units[target].id;
+//          this.target = units[target];
+//          this.action = "move";
+//        }
         if (this.life <= 0)
         {
           delete enemy_units[this.id]
@@ -174,7 +185,7 @@ class Enemy_unit
         {
           if (this.hit_speed == 0)
           {
-            for (let dron of Object.values(drones))
+            for (let dron of Object.values(all_your_units))
             {
               if (dron.id == this.target_id)
               {
@@ -936,7 +947,7 @@ class Dron
  }//}}}
 
   draw()
-  {//{{{
+  {//0{{{
     
     ctx.save();
     ctx.translate(this.x,this.y);
@@ -1324,10 +1335,11 @@ main_house.type = "main_house";
 main_house.x = 655;
 main_house.y = 300;
 
+let screen_width = (window.outerWidth - (window.outerWidth / 6));
+let screen_height = window.outerHeight;
+canvas.width = screen_width;
 let number_of_drones = 0;
 let zergling_rush = 0;
-let x_screen = 0;
-let y_screen = 0;
 let mousedown = false;
 let end_select_y = 0;
 let end_select_x = 0;
@@ -1473,6 +1485,15 @@ function draw()
       document.getElementById("ukazatel_velikosti_units").style.display = "block";
   }
   ctx.clearRect(0,0,1823,1004);
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.lineTo(0,screen_height);
+  ctx.lineTo(screen_width,screen_height);
+  ctx.lineTo(screen_width,0);
+  ctx.closePath();
+  ctx.fillStyle = "brown";
+  ctx.fill();
+  ctx.stroke();
   document.getElementById("miner.").textContent = "Minerals:" + mineralky;
   document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
   document.getElementById("supply").textContent = "Supply:" + supplied + "/" + supply;
@@ -2297,10 +2318,10 @@ function rush()
 
 function wait_for_more_rush()
 {/*{{{*/
-  let waiting_time = Math.floor(Math.random()*0000)+00001
+  let waiting_time = Math.floor(Math.random()*55556)+77778
   setTimeout (() => {
   let i = -1;
-  let number_f_r = Math.floor(Math.random()*4)+1;
+  let number_f_r = Math.floor(Math.random()*6)+2;
   while (i <= number_f_r)
   {
     rush();

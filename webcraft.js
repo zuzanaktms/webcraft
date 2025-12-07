@@ -465,7 +465,7 @@ class Structure
       ctx.translate(this.x,this.y);
       
 
-//square(body of house)
+      //square(body of house)
       ctx.beginPath();
       ctx.moveTo(-50, -50);
       ctx.lineTo(50, -50);
@@ -658,9 +658,8 @@ class Structure
 
           ctx.stroke();
         }
-        ctx.restore();
-      
-    }
+        ctx.restore(); 
+      }
     }
     if (this.type == "evo_cham")
     {
@@ -760,6 +759,83 @@ class Structure
           ctx.restore();
         
       }
+    }
+    if (this.type == "deftow")
+    {
+      ctx.save();
+      ctx.translate(this.x,this.y);
+      if (this.stadium >= 50 && this.stadium < 65)
+      {
+        ctx.beginPath();
+        ctx.arc(0,0, 30, 0,2 * Math.PI);
+        ctx.fillStyle = "#741B47";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+      }
+      else if (this.stadium >= 65 && this.stadium < 80)
+      {
+        ctx.beginPath();
+        ctx.arc(0,0, 30, 0,2 * Math.PI);
+        ctx.fillStyle = "#741B47";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(-15,15);
+        ctx.lineTo(-15,-15);
+        ctx.lineTo(15,-15);
+        ctx.lineTo(15,15);
+        ctx.lineTo(-15,15);
+        ctx.fillStyle = "#741B47";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+      }
+      else if (this.stadium > 79)
+      {
+        ctx.beginPath();
+        ctx.arc(0,0, 30, 0,2 * Math.PI);
+        ctx.fillStyle = "#741B47";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(-15,15);
+        ctx.lineTo(-15,-15);
+        ctx.lineTo(15,-15);
+        ctx.lineTo(15,15);
+        ctx.lineTo(-15,15);
+        ctx.fillStyle = "#741B47";
+        ctx.fill();
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-5,15);
+        ctx.lineTo(-5,35);
+        ctx.lineTo(5,35);
+        ctx.lineTo(5,15);
+        ctx.lineTo(-5,15);
+        ctx.closePath();
+        ctx.fillStyle = "741B48"
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(-5,-15);
+        ctx.lineTo(-5,-35);
+        ctx.lineTo(5,-35);
+        ctx.lineTo(5,-15);
+        ctx.lineTo(-5,-15);
+        ctx.closePath();
+        ctx.fillStyle = "741B48"
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
     }
   }//}}}
 
@@ -1054,15 +1130,15 @@ class Dron
     case "none":
       if (this.life <= 0)
       {
+        supplied -= 1;
+        delete drones[this.id]
+        delete all_your_units[this.id]
         if (this.am_I_selected == 1)
         {
           document.getElementById("build_spool").style.display = "none";
           document.getElementById("drone_name").style.display = "none"
           document.getElementById("drone_lifes").style.display = "none";
         }
-        supplied -= 1;
-        delete drones[this.id]
-        delete all_your_units[this.id]
       }
       break;
     case "move":     
@@ -1108,6 +1184,8 @@ class Dron
             if (this.am_I_selected == 1)
             {
               document.getElementById("build_spool").style.display = "none";
+              document.getElementById("build_evocham").style.display = "none";
+              document.getElementById("build_deftow").style.display = "none";
               document.getElementById("drone_name").style.display = "none"
               document.getElementById("drone_lifes").style.display = "none";
             }
@@ -1491,7 +1569,7 @@ function draw()
   ctx.lineTo(screen_width,screen_height);
   ctx.lineTo(screen_width,0);
   ctx.closePath();
-  ctx.fillStyle = "brown";
+  ctx.fillStyle = "#8C4949";
   ctx.fill();
   ctx.stroke();
   document.getElementById("miner.").textContent = "Minerals:" + mineralky;
@@ -1580,11 +1658,14 @@ canvas.addEventListener("mousedown", function(event)
      document.getElementById("more_supply_button").style.display = "none";
      document.getElementById("spool_name").style.display = "none";
      document.getElementById("spool_life").style.display = "none";
+     document.getElementById("deftow_name").style.display = "none";
+     document.getElementById("deftow_life").style.display = "none";
      document.getElementById("zergling_button").style.display = "none";
      document.getElementById("zergling_lifes").style.display = "none";
      document.getElementById("zergling_name").style.display = "none";
      document.getElementById("fast_zergling_button").style.display = "none";
      document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
+     document.getElementById("build_deftow").style.display = "none";
 
      if (Object.keys(drones).length > 0)
      {
@@ -1596,6 +1677,7 @@ canvas.addEventListener("mousedown", function(event)
            document.getElementById("drone_lifes").style.display = "block";
            document.getElementById("build_spool").style.display = "block";
            document.getElementById("build_evocham").style.display = "block";
+           document.getElementById("build_deftow").style.display = "block";
            document.getElementById("minerals_name").style.display = "none" 
            document.getElementById("minerals_kapacita").style.display = "none";
            sounds.dron_select.play();
@@ -1654,6 +1736,13 @@ canvas.addEventListener("mousedown", function(event)
            {
              document.getElementById("more_damega").style.display = "block";
            }
+         }
+         else if (structure.type == "deftow")
+         {
+           select[structure.id] = structure.type;
+           document.getElementById("deftow_name").style.display = "block";
+           document.getElementById("deftow_life").style.display = "block";
+           document.getElementById("deftow_life").textContent = "Lifes:" + structure.life;
          }
        }
      }
@@ -1916,6 +2005,8 @@ document.addEventListener("keyup", function(event)/*{{{*/
       {
         u_damega();
       }
+    case "t":
+      new_deftow();
       break;
    }
 });/*}}}*/
@@ -2054,6 +2145,29 @@ function new_evocham()
   }
 }/*}}}*/
 
+function new_deftow()
+{/*{{{*/
+  
+  if (Object.values(select).length >= 1)
+  {
+      let dron = Object.values(select)[0];
+      dron.building = 1;
+  }
+
+  if (mineralky >= 125)
+  {  
+    building = "deftow";
+    ukol = "building";
+  }
+  else
+  {
+    document.getElementById("no_minerals").style.display = "block";
+    setTimeout(() => {
+    document.getElementById("no_minerals").style.display = "none";
+    },3500);
+  }
+}/*}}}*/
+
 function build(x,y)
 {/*{{{*/
   if (building == "spawn_pool")
@@ -2072,6 +2186,15 @@ function build(x,y)
     structure = new Structure();
     structure.type = building;
     structure.life = 500;
+    structure.x = x;
+    structure.y = y;
+  }
+  else if (building == "deftow")
+  {
+    mineralky -= 125;
+    structure = new Structure();
+    structure.type = "deftow";
+    structure.life = 400;
     structure.x = x;
     structure.y = y;
   }
@@ -2242,6 +2365,7 @@ document.addEventListener("mouseup", function(event)
               document.getElementById("drone_lifes").style.display = "block";
               document.getElementById("build_spool").style.display = "block";
               document.getElementById("build_evocham").style.display = "block";
+              document.getElementById("build_deftow").style.display = "block";
               document.getElementById("minerals_name").style.display = "none" 
               document.getElementById("minerals_kapacita").style.display = "none";
             }
@@ -2265,6 +2389,7 @@ document.addEventListener("mouseup", function(event)
             document.getElementById("drone_lifes").style.display = "block";
             document.getElementById("build_spool").style.display = "block";
             document.getElementById("build_evocham").style.display = "block";
+            document.getElementById("build_deftow").style.display = "block";
             document.getElementById("minerals_name").style.display = "none" 
             document.getElementById("minerals_kapacita").style.display = "none";          
           }
@@ -2362,6 +2487,11 @@ document.getElementById("more_damega").addEventListener("click", function() {
       u_damega();
     }
 });
+
+document.getElementById("build_deftow").addEventListener("click", function() {
+  new_deftow();
+});
+
 /*}}}*/
 
 //dolble click select

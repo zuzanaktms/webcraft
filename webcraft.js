@@ -455,11 +455,13 @@ class Structure
     this.life = 1000;
     this.stadium = 5;
     this.rotate = Math.floor(Math.random()*360);
+    this.number_of_tentacles = 1;
   }//}}}
 
   draw()
   {//{{{
-    if (this.type == "main_house")
+    //main house
+    if (this.type == "main_house")/*{{{*/
     {
       ctx.save();
       ctx.translate(this.x,this.y);
@@ -544,8 +546,9 @@ class Structure
       ctx.stroke();
       
       ctx.restore();
-    }
-    if (this.type == "spawn_pool")
+    }/*}}}*/
+    //spawning pool
+    if (this.type == "spawn_pool")/*{{{*/
     {
       if (this.stadium == 100)
       {
@@ -660,8 +663,9 @@ class Structure
         }
         ctx.restore(); 
       }
-    }
-    if (this.type == "evo_cham")
+    }/*}}}*/
+    //evolution chamber
+    if (this.type == "evo_cham")/*{{{*/
     {
       if (this.stadium == 100)
       {
@@ -759,15 +763,46 @@ class Structure
           ctx.restore();
         
       }
-    }
-    if (this.type == "deftow")
+    }/*}}}*/
+    //defend tower
+    if (this.type == "deftow")/*{{{*/
     {
       ctx.save();
       ctx.translate(this.x,this.y);
-      if (this.stadium >= 50 && this.stadium < 65)
+      if (this.stadium < 50)
+      {
+        if (this.stadium == 5 || this.stadium == 15 || this.stadium == 25 || this.stadium == 35 || this.stadium == 45)
+        {
+          ctx.scale(0.7,0.7);
+        }
+        else if  (this.stadium == 0 || this.stadium == 10 || this.stadium == 20 || this.stadium == 30 || this.stadium == 40 || this.stadium == 50)
+        {
+          ctx.scale(0.4,0.4);
+        }
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.moveTo(-70,0);
+        ctx.lineTo(-50,-45);
+        ctx.lineTo(-21,-60);
+        ctx.lineTo(-10,-55);
+        ctx.lineTo(20,-47);
+        ctx.lineTo(40,-30);
+        ctx.lineTo(72,3);
+        ctx.lineTo(55,20);
+        ctx.lineTo(30,30);
+        ctx.lineTo(-2,33);
+        ctx.lineTo(-35,36);
+        ctx.lineTo(-70,0);
+        ctx.closePath();
+        ctx.fillStyle = "#741B47";
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+      else if (this.stadium >= 50 && this.stadium < 65)
       {
         ctx.beginPath();
-        ctx.arc(0,0, 30, 0,2 * Math.PI);
+        ctx.arc(0,0, 45, 0,2 * Math.PI);
         ctx.fillStyle = "#741B47";
         ctx.fill();
         ctx.closePath();
@@ -776,7 +811,7 @@ class Structure
       else if (this.stadium >= 65 && this.stadium < 80)
       {
         ctx.beginPath();
-        ctx.arc(0,0, 30, 0,2 * Math.PI);
+        ctx.arc(0,0, 45, 0,2 * Math.PI);
         ctx.fillStyle = "#741B47";
         ctx.fill();
         ctx.closePath();
@@ -796,7 +831,7 @@ class Structure
       else if (this.stadium > 79)
       {
         ctx.beginPath();
-        ctx.arc(0,0, 30, 0,2 * Math.PI);
+        ctx.arc(0,0, 45, 0,2 * Math.PI);
         ctx.fillStyle = "#741B47";
         ctx.fill();
         ctx.closePath();
@@ -815,8 +850,8 @@ class Structure
 
         ctx.beginPath();
         ctx.moveTo(-5,15);
-        ctx.lineTo(-5,35);
-        ctx.lineTo(5,35);
+        ctx.lineTo(-5,50);
+        ctx.lineTo(5,50);
         ctx.lineTo(5,15);
         ctx.lineTo(-5,15);
         ctx.closePath();
@@ -826,8 +861,8 @@ class Structure
         
         ctx.beginPath();
         ctx.moveTo(-5,-15);
-        ctx.lineTo(-5,-35);
-        ctx.lineTo(5,-35);
+        ctx.lineTo(-5,-50);
+        ctx.lineTo(5,-50);
         ctx.lineTo(5,-15);
         ctx.lineTo(-5,-15);
         ctx.closePath();
@@ -836,7 +871,7 @@ class Structure
         ctx.stroke();
       }
       ctx.restore();
-    }
+    }/*}}}*/
   }//}}}
 
   build_units()
@@ -1020,6 +1055,7 @@ class Dron
     this.x_cil = this.x;
     this.y_cil = this.y;
     this.type = "dron";
+    this.building_thing = "none";
  }//}}}
 
   draw()
@@ -1180,7 +1216,7 @@ class Dron
             this.move(this.my_mineral.x,90);
             break;
           case "building":    
-            build(this.x,this.y);
+            build(this.x,this.y,this.building_thing);
             if (this.am_I_selected == 1)
             {
               document.getElementById("build_spool").style.display = "none";
@@ -1643,6 +1679,7 @@ canvas.addEventListener("mousedown", function(event)
      }
      select = {};
      document.getElementById("ukazatel_velikosti_units").style.display = "none";
+     document.getElementById("deftow_tententacles").style.display = "none";
      document.getElementById("main_house_name").style.display = "none";
      document.getElementById("evocham_name").style.display = "none";
      document.getElementById("evocham_life").style.display = "none";
@@ -1666,6 +1703,7 @@ canvas.addEventListener("mousedown", function(event)
      document.getElementById("fast_zergling_button").style.display = "none";
      document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
      document.getElementById("build_deftow").style.display = "none";
+     document.getElementById("more_tower_tentacle").style.display = "none";
 
      if (Object.keys(drones).length > 0)
      {
@@ -1696,7 +1734,7 @@ canvas.addEventListener("mousedown", function(event)
      }
      for (let structure of Object.values(structures))
      {
-       if (distance(structure.x,structure.y,x_click,y_click,100))
+       if (distance(structure.x,structure.y,x_click,y_click,50))
        {
          if (structure.type == "main_house")
          {
@@ -1739,10 +1777,17 @@ canvas.addEventListener("mousedown", function(event)
          }
          else if (structure.type == "deftow")
          {
+           structure.am_I_selected = 1;
            select[structure.id] = structure.type;
            document.getElementById("deftow_name").style.display = "block";
            document.getElementById("deftow_life").style.display = "block";
            document.getElementById("deftow_life").textContent = "Lifes:" + structure.life;
+           document.getElementById("deftow_tententacles").style.display = "block";
+           document.getElementById("deftow_tententacles").textContent = "Tentacles:" + structure.number_of_tentacles;
+           if (structure.number_of_tentacles < 3)
+           {
+             document.getElementById("more_tower_tentacle").style.display = "block";
+           }
          }
        }
      }
@@ -1770,7 +1815,7 @@ canvas.addEventListener("mousedown", function(event)
      {
        for (let structure of Object.values(structures))
        {
-         if (distance(structure.x,structure.y,x_click,y_click,150))
+         if (distance(structure.x,structure.y,x_click,y_click,175))
          {
            mozno = false;
            break;
@@ -2101,15 +2146,11 @@ function u_damega()
 
 function new_spool()
 {/*{{{*/
-  
-  if (Object.values(select).length >= 1)
-  {
-      let dron = Object.values(select)[0];
-      dron.building = 1;
-  }
-
-  if (mineralky >= 150)
+  if (mineralky >= 150 && Object.values(select).length >= 1)
   {  
+    let dron = Object.values(select)[0];
+    dron.building = 1;
+    dron.building_thing = "spawn_pool";
     building = "spawn_pool";
     ukol = "building";
   }
@@ -2120,19 +2161,16 @@ function new_spool()
     document.getElementById("no_minerals").style.display = "none";
     },3500);
   }
+
 }/*}}}*/
 
 function new_evocham()
 {/*{{{*/
-  
-  if (Object.values(select).length >= 1)
-  {
-      let dron = Object.values(select)[0];
-      dron.building = 1;
-  }
-
-  if (mineralky >= 100)
+  if (mineralky >= 100 && Object.values(select).length >= 1)
   {  
+    let dron = Object.values(select)[0];
+    dron.building = 1;
+    dron.building_thing = "evo_cham";
     building = "evo_cham";
     ukol = "building";
   }
@@ -2147,15 +2185,11 @@ function new_evocham()
 
 function new_deftow()
 {/*{{{*/
-  
-  if (Object.values(select).length >= 1)
-  {
-      let dron = Object.values(select)[0];
-      dron.building = 1;
-  }
-
-  if (mineralky >= 125)
+  if (mineralky >= 125 && Object.values(select).length >= 1)
   {  
+    let dron = Object.values(select)[0];
+    dron.building = 1;
+    dron.building_thing = "deftow";
     building = "deftow";
     ukol = "building";
   }
@@ -2168,32 +2202,32 @@ function new_deftow()
   }
 }/*}}}*/
 
-function build(x,y)
+function build(x,y,type)
 {/*{{{*/
-  if (building == "spawn_pool")
+  if (type == "spawn_pool")
   {
     supplied -= 1;
     mineralky -= 150;
     structure = new Structure();
-    structure.type = building;
+    structure.type = type;
     structure.life = 900;
     structure.x = x;
     structure.y = y;
   }
-  else if (building == "evo_cham")
+  else if (type == "evo_cham")
   {
     mineralky -= 100;
     structure = new Structure();
-    structure.type = building;
+    structure.type = type;
     structure.life = 500;
     structure.x = x;
     structure.y = y;
   }
-  else if (building == "deftow")
+  else if (type == "deftow")
   {
     mineralky -= 125;
     structure = new Structure();
-    structure.type = "deftow";
+    structure.type = type;
     structure.life = 400;
     structure.x = x;
     structure.y = y;
@@ -2358,11 +2392,6 @@ document.addEventListener("mouseup", function(event)
             if (select[key2].type == "dron")
             {
               document.getElementById("drone_name").style.display = "block";
-              for (let dron of Object.values(drones))
-              {
-              document.getElementById("drone_lifes").textContent = "Lifes:" + dron.life;
-              }
-              document.getElementById("drone_lifes").style.display = "block";
               document.getElementById("build_spool").style.display = "block";
               document.getElementById("build_evocham").style.display = "block";
               document.getElementById("build_deftow").style.display = "block";
@@ -2371,22 +2400,12 @@ document.addEventListener("mouseup", function(event)
             }
             else if (select[key2].type == "zergling")
             {
-              for (let unit of Object.values(units))
-              {
-              document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
-              }
-              document.getElementById("zergling_lifes").style.display = "block";
               document.getElementById("zergling_name").style.display = "block";
             }
           }
           else
           {
             document.getElementById("drone_name").style.display = "block";
-            for (let dron of Object.values(drones))
-            {
-            document.getElementById("drone_lifes").textContent = "Lifes:" + dron.life;
-            }
-            document.getElementById("drone_lifes").style.display = "block";
             document.getElementById("build_spool").style.display = "block";
             document.getElementById("build_evocham").style.display = "block";
             document.getElementById("build_deftow").style.display = "block";
@@ -2455,32 +2474,58 @@ function wait_for_more_rush()
   }, waiting_time);
 }/*}}}*/
 
+function new_tower_tentacle()
+{
+  for (let tower of Object.values(structures))
+  {
+    if (tower.am_I_selected == 1 && mineralky >= 110 && tower.number_of_tentacles < 3)
+    {
+      tower.number_of_tentacles += 1;
+      document.getElementById("deftow_tententacles").textContent = "Tentacles:" + structure.number_of_tentacles;
+    }
+    else if (mineralky < 110)
+    {
+      document.getElementById("no_minerals").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("no_minerals").style.display = "none";
+      },3500);  
+    }
+  }
+}
+
 //buttons code
 /*{{{*/
+
 new_drone_button.addEventListener("click", function() {
   new_dron();
 });
 
+//build spawn_pool
 document.getElementById("build_spool").addEventListener("click", function() {
   new_spool();
 });
 
+//more supply
 document.getElementById("more_supply_button").addEventListener("click", function() {
   new_supply_chamber();
 });
 
+//zergling
 document.getElementById("zergling_button").addEventListener("click", function() {
   new_zergling();
 });
 
+//speed zergling
 document.getElementById("fast_zergling_button").addEventListener("click", function() {
   u_zergling_speed();
 });
 
+//evo_cham
 document.getElementById("build_evocham").addEventListener("click", function() {
   new_evocham();
 });
 
+//more_damage
 document.getElementById("more_damega").addEventListener("click", function() {
     if (damega_upgrade == 0)
     {
@@ -2488,10 +2533,15 @@ document.getElementById("more_damega").addEventListener("click", function() {
     }
 });
 
+//defend tower
 document.getElementById("build_deftow").addEventListener("click", function() {
   new_deftow();
 });
 
+//defend tower add tentacle
+document.getElementById("more_tower_tentacle").addEventListener("click", function() {
+  new_tower_tentacle();
+});
 /*}}}*/
 
 //dolble click select

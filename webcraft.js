@@ -1412,6 +1412,8 @@ function load_sounds()
     "zergling_command2" : new Audio("res/zergling2.wav"),
     "zergling_command3" : new Audio("res/zergling3.wav"),
     "zergling_morph" : new Audio("res/zergling4.wav"),
+    "zerglings_incoming" : new Audio("res/zerglings_incoming.wav"),
+    "zergling_sound" : new Audio("res/zergling_sound.wav"),
   }
 }/*}}}*/
 
@@ -1971,6 +1973,7 @@ canvas.addEventListener("mouseup", function(event)
               unit.figth = 1;
               unit.target_id = enemy.id;
               unit.move(enemy.x,enemy.y)
+              sounds.zergling_sound.play();
             }
             else
             {
@@ -2462,7 +2465,7 @@ function rush()
 
 function wait_for_more_rush()
 {/*{{{*/
-  let waiting_time = Math.floor(Math.random()*55556)+77778
+  let waiting_time = Math.floor(Math.random()*55556)+77778;
   setTimeout (() => {
   let i = -1;
   let number_f_r = Math.floor(Math.random()*6)+2;
@@ -2471,11 +2474,15 @@ function wait_for_more_rush()
     rush();
     i++
   }
+  if (rase_of_enemy == 1)
+  {
+    sounds.zerglings_incoming.play();
+  }
   }, waiting_time);
 }/*}}}*/
 
 function new_tower_tentacle()
-{
+{/*{{{*/
   for (let tower of Object.values(structures))
   {
     if (tower.am_I_selected == 1 && mineralky >= 110 && tower.number_of_tentacles < 3)
@@ -2491,7 +2498,7 @@ function new_tower_tentacle()
       },3500);  
     }
   }
-}
+}/*}}}*/
 
 //buttons code
 /*{{{*/

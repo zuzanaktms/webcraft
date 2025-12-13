@@ -1420,7 +1420,7 @@ function load_sounds()
 //Initialize
 
 //variables, values and dictionaries
-///variables,data and constants{{{
+//{{{
 const canvas = document.getElementById("plocha");
 const ctx = canvas.getContext("2d");
 
@@ -1437,6 +1437,12 @@ let minerals = {};
 let drones = {};
 let structures = {};
 let select = {};
+let keys = {
+  up: 0,
+  down: 0,
+  left: 0,
+  right: 0,
+};
 
 let enemy_units = {};
 
@@ -1478,6 +1484,10 @@ let damega_upgrade = 0;
 let rase_of_enemy = Math.floor(Math.random() * 2) + 1;
 let znaceni = 0;
 let damega_upgrading = 0;
+let screen_x = 0;
+let screen_y = 0;
+let max_screen_x = 100;
+let max_screen_y = 100; 
 /*}}}*/
 
 //function called in start
@@ -1541,7 +1551,6 @@ for (let dron of Object.values(drones))
 function akce()
 /*{{{*/
 {
-  
   for (let structure of Object.values(structures))
   {
     structure.build_units();
@@ -1786,7 +1795,7 @@ canvas.addEventListener("mousedown", function(event)
            document.getElementById("deftow_life").textContent = "Lifes:" + structure.life;
            document.getElementById("deftow_tententacles").style.display = "block";
            document.getElementById("deftow_tententacles").textContent = "Tentacles:" + structure.number_of_tentacles;
-           if (structure.number_of_tentacles < 3)
+           if (structure.number_of_tentacles < 3 && structure.stadium == 100)
            {
              document.getElementById("more_tower_tentacle").style.display = "block";
            }
@@ -2025,7 +2034,6 @@ canvas.addEventListener("contextmenu", function(event)
 //keysdown control
 document.addEventListener("keyup", function(event)/*{{{*/
 {
-
     switch (event.key)
     {
     case "d":
@@ -2055,6 +2063,18 @@ document.addEventListener("keyup", function(event)/*{{{*/
       }
     case "t":
       new_deftow();
+      break;
+    case "ArrowRight":
+      keys.right = 0;
+      break;
+    case "ArrowLeft":
+      keys.left = 0;
+      break;
+    case "ArrowUp":
+      keys.up = 0;
+      break;
+    case "ArrowDown":
+      keys_down = 0;
       break;
    }
 });/*}}}*/
@@ -2485,8 +2505,9 @@ function new_tower_tentacle()
 {/*{{{*/
   for (let tower of Object.values(structures))
   {
-    if (tower.am_I_selected == 1 && mineralky >= 110 && tower.number_of_tentacles < 3)
+    if (tower.am_I_selected == 1 && mineralky >= 110 && tower.number_of_tentacles < 3 && tower.type == "deftow")
     {
+      mineralky -= 110;
       tower.number_of_tentacles += 1;
       document.getElementById("deftow_tententacles").textContent = "Tentacles:" + structure.number_of_tentacles;
     }

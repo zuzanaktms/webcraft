@@ -1,3 +1,7 @@
+body {
+  overflow:hidden;
+}
+
 #new_drone_button {
   background-color:#FFFFFF;
   color: black;

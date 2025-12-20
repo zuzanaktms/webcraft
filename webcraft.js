@@ -162,17 +162,6 @@ class Enemy_unit
           this.target = drones[target];
           this.action = "move";
         }
-//        if (drone_ids.length == 0)
-//        {
-//          enemy = new Enemy_unit();
-//          let attacker_y = Math.floor(Math.random()*500);
-//          let units_ids = Object.keys(drones);
-//          let id_idx = Math.floor(Math.random() * units_ids.length);
-//          let target = units_ids[id_idx];
-//          this.target_id = units[target].id;
-//          this.target = units[target];
-//          this.action = "move";
-//        }
         if (this.life <= 0)
         {
           delete enemy_units[this.id]
@@ -187,8 +176,10 @@ class Enemy_unit
           {
             for (let dron of Object.values(all_your_units))
             {
-              if (dron.id == this.target_id)
+              let drone_num = Object.keys(drones);
+              if (dron.id == this.target_id && drone_num != 0)
               {
+                sounds.zergling_fight.play();
                 dron.life -= this.hit_damage;
                 this.hit_speed = 1;
               }
@@ -374,6 +365,7 @@ class Unit
             {
               if (enemy.id == this.target_id)
               {
+                sounds.zergling_fight.play();
                 enemy.life -= this.hit_damage;
                 if (enemy.life <= 0)
                 {
@@ -1414,6 +1406,7 @@ function load_sounds()
     "zergling_morph" : new Audio("res/zergling4.wav"),
     "zerglings_incoming" : new Audio("res/zerglings_incoming.wav"),
     "zergling_sound" : new Audio("res/zergling_sound.wav"),
+    "zergling_fight" : new Audio("res/zerglings_fight_sound.wav"),
   }
 }/*}}}*/
 
@@ -2485,7 +2478,7 @@ function rush()
 
 function wait_for_more_rush()
 {/*{{{*/
-  let waiting_time = Math.floor(Math.random()*55556)+77778;
+  let waiting_time = Math.floor(Math.random()*0)+0;
   setTimeout (() => {
   let i = -1;
   let number_f_r = Math.floor(Math.random()*6)+2;

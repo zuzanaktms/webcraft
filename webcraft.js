@@ -16,6 +16,7 @@ class Enemy_unit
     this.life = 40;
     this.x_cil = this.x;
     this.y_cil = this.y;
+    this.rotate = 0;
     if (rase_of_enemy == 1)
     {
       this.hit_damage = 4;
@@ -179,15 +180,32 @@ class Enemy_unit
               let drone_num = Object.keys(drones);
               if (dron.id == this.target_id && drone_num != 0)
               {
-                sounds.zergling_fight.play();
+                if (rase_of_enemy == 1)
+                {
+                  sounds.zergling_fight.play();
+                }
+                else
+                {
+                  sounds.zealots_blades.play();
+                }
                 dron.life -= this.hit_damage;
                 this.hit_speed = 1;
+                
               }
             }
           }
           else
           { 
             this.hit_speed += 1;
+            this.rotate = 0;
+            if (this.hit_speed == 5)
+            {
+              this.rotate = 50;
+              }
+            if (this.hit_speed == 10)
+            {
+              this.rotate = -50;
+            }
             if (this.hit_speed == 15)
             {
               this.hit_speed = 0;
@@ -199,7 +217,7 @@ class Enemy_unit
           this.x += xd/d * this.speed;
           this.y += yd/d * this.speed;
 
-          let rad_angle = Math.atan2(yd,xd);
+          let rad_angle = (Math.atan2(yd,xd) + this.rotate);
           let deg_angle = rad_angle * 180 / Math.PI;
           this.angle = 90 + deg_angle;
         }
@@ -452,7 +470,7 @@ class Structure
 
   draw()
   {//{{{
-    //main house
+//main house
     if (this.type == "main_house")/*{{{*/
     {
       ctx.save();
@@ -539,8 +557,8 @@ class Structure
       
       ctx.restore();
     }/*}}}*/
-    //spawning pool
-    if (this.type == "spawn_pool")/*{{{*/
+//spawning pool
+if (this.type == "spawn_pool")/*{{{*/
     {
       if (this.stadium == 100)
       {
@@ -656,7 +674,7 @@ class Structure
         ctx.restore(); 
       }
     }/*}}}*/
-    //evolution chamber
+//evolution chamber
     if (this.type == "evo_cham")/*{{{*/
     {
       if (this.stadium == 100)
@@ -756,8 +774,8 @@ class Structure
         
       }
     }/*}}}*/
-    //defend tower
-    if (this.type == "deftow")/*{{{*/
+//slime_generator   
+    if (this.type == "sligen")/*{{{*/
     {
       ctx.save();
       ctx.translate(this.x,this.y);
@@ -860,7 +878,7 @@ class Structure
         ctx.closePath();
         ctx.fillStyle = "741B48"
         ctx.fill();
-        ctx.stroke();
+        ctx.stroke();  
       }
       ctx.restore();
     }/*}}}*/
@@ -1024,11 +1042,13 @@ class Structure
 //}}}
 
 //class dron
+
 /*{{{*/
 class Dron
 {
   constructor()
-  {//{{{
+
+{//{{{
     this.find_number = number_of_drones++;
     this.building = 0;
     this.id = g_id++;
@@ -1051,7 +1071,7 @@ class Dron
  }//}}}
 
   draw()
-  {//0{{{
+  {//{{{
     
     ctx.save();
     ctx.translate(this.x,this.y);
@@ -1213,7 +1233,7 @@ class Dron
             {
               document.getElementById("build_spool").style.display = "none";
               document.getElementById("build_evocham").style.display = "none";
-              document.getElementById("build_deftow").style.display = "none";
+              document.getElementById("build_sligen").style.display = "none";
               document.getElementById("drone_name").style.display = "none"
               document.getElementById("drone_lifes").style.display = "none";
             }
@@ -1346,21 +1366,31 @@ class Mineral
 //}}}
 }/*}}}*/
 
+function draw_sligen_slime(x,y)
+{/*{{{*/
+  ctx.beginPath();
+  ctx.arc(x,y, 275, 0,2 * Math.PI);
+  ctx.closePath();
+  ctx.fillStyle = "#990099";
+  ctx.fill();
+  ctx.stroke();
+}/*}}}*/
+
 function distance(x,y,x1,y1,v)
 //{{{
-  { 
-    const xd = x - x1;
-    const yd = y - y1;
-    const d = Math.sqrt(xd*xd + yd*yd);
-    if (d >= v) 
-    {
-      return false;
-    }
-    else 
-    {
-      return true;
-    }
+{ 
+  const xd = x - x1;
+  const yd = y - y1;
+  const d = Math.sqrt(xd*xd + yd*yd);
+  if (d >= v) 
+  {
+    return false;
   }
+  else 
+  {
+    return true;
+  }
+}
 //}}}
 
 function rally_point_draw(x,y)
@@ -1407,6 +1437,7 @@ function load_sounds()
     "zerglings_incoming" : new Audio("res/zerglings_incoming.wav"),
     "zergling_sound" : new Audio("res/zergling_sound.wav"),
     "zergling_fight" : new Audio("res/zerglings_fight_sound.wav"),
+    "zealots_blades" : new Audio("res/zealots_blades_sound.wav"),
   }
 }/*}}}*/
 
@@ -1556,6 +1587,13 @@ function akce()
 
   for (let dron of Object.values(drones))
   {
+//    for (let struct of Object.values(structures))
+//    {
+//      if (distance(dron.x,dron.y,struct.x,struct.y,275))
+//      {
+//        dron.speed = 8; 
+//      }
+//    }
     dron.akce();
   }
   
@@ -1593,6 +1631,7 @@ function akce()
   }
   draw();
 }
+
 /*}}}*/
 
 function draw()
@@ -1615,6 +1654,13 @@ function draw()
   document.getElementById("miner.").textContent = "Minerals:" + mineralky;
   document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
   document.getElementById("supply").textContent = "Supply:" + supplied + "/" + supply;
+  for (let structure of Object.values(structures))
+  {
+    if (structure.type == "sligen" && structure.stadium == 100)
+    {
+      draw_sligen_slime(structure.x,structure.y);
+    }
+  }
   for (let unit of Object.values(units))
   {
     unit.draw();
@@ -1668,7 +1714,6 @@ canvas.addEventListener("mousedown", function(event)
  const rect = canvas.getBoundingClientRect();
  const x_click = event.clientX - rect.left;
  const y_click = event.clientY - rect.top;
-
  if (ukol == "none")
  {//{{{
    if (mousebutton(event) == 0) {
@@ -1683,7 +1728,6 @@ canvas.addEventListener("mousedown", function(event)
      }
      select = {};
      document.getElementById("ukazatel_velikosti_units").style.display = "none";
-     document.getElementById("deftow_tententacles").style.display = "none";
      document.getElementById("main_house_name").style.display = "none";
      document.getElementById("evocham_name").style.display = "none";
      document.getElementById("evocham_life").style.display = "none";
@@ -1699,15 +1743,14 @@ canvas.addEventListener("mousedown", function(event)
      document.getElementById("more_supply_button").style.display = "none";
      document.getElementById("spool_name").style.display = "none";
      document.getElementById("spool_life").style.display = "none";
-     document.getElementById("deftow_name").style.display = "none";
-     document.getElementById("deftow_life").style.display = "none";
+     document.getElementById("sligen_name").style.display = "none";
+     document.getElementById("sligen_life").style.display = "none";
      document.getElementById("zergling_button").style.display = "none";
      document.getElementById("zergling_lifes").style.display = "none";
      document.getElementById("zergling_name").style.display = "none";
      document.getElementById("fast_zergling_button").style.display = "none";
      document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
-     document.getElementById("build_deftow").style.display = "none";
-     document.getElementById("more_tower_tentacle").style.display = "none";
+     document.getElementById("build_sligen").style.display = "none";
 
      if (Object.keys(drones).length > 0)
      {
@@ -1719,7 +1762,7 @@ canvas.addEventListener("mousedown", function(event)
            document.getElementById("drone_lifes").style.display = "block";
            document.getElementById("build_spool").style.display = "block";
            document.getElementById("build_evocham").style.display = "block";
-           document.getElementById("build_deftow").style.display = "block";
+           document.getElementById("build_sligen").style.display = "block";
            document.getElementById("minerals_name").style.display = "none" 
            document.getElementById("minerals_kapacita").style.display = "none";
            sounds.dron_select.play();
@@ -1779,19 +1822,13 @@ canvas.addEventListener("mousedown", function(event)
              document.getElementById("more_damega").style.display = "block";
            }
          }
-         else if (structure.type == "deftow")
+         else if (structure.type == "sligen")
          {
            structure.am_I_selected = 1;
            select[structure.id] = structure.type;
-           document.getElementById("deftow_name").style.display = "block";
-           document.getElementById("deftow_life").style.display = "block";
-           document.getElementById("deftow_life").textContent = "Lifes:" + structure.life;
-           document.getElementById("deftow_tententacles").style.display = "block";
-           document.getElementById("deftow_tententacles").textContent = "Tentacles:" + structure.number_of_tentacles;
-           if (structure.number_of_tentacles < 3 && structure.stadium == 100)
-           {
-             document.getElementById("more_tower_tentacle").style.display = "block";
-           }
+           document.getElementById("sligen_name").style.display = "block";
+           document.getElementById("sligen_life").style.display = "block";
+           document.getElementById("sligen_life").textContent = "Lifes:" + structure.life;
          }
        }
      }
@@ -2049,13 +2086,15 @@ document.addEventListener("keyup", function(event)/*{{{*/
       {
         u_zergling_speed();
       }
+      break;
     case "m":
       if (damega_upgrade == 0)
       {
         u_damega();
       }
+      break;
     case "t":
-      new_deftow();
+      new_sligen();
       break;
     case "ArrowRight":
       keys.right = 0;
@@ -2199,14 +2238,14 @@ function new_evocham()
   }
 }/*}}}*/
 
-function new_deftow()
+function new_sligen()
 {/*{{{*/
   if (mineralky >= 125 && Object.values(select).length >= 1)
   {  
     let dron = Object.values(select)[0];
     dron.building = 1;
-    dron.building_thing = "deftow";
-    building = "deftow";
+    dron.building_thing = "sligen";
+    building = "sligen";
     ukol = "building";
   }
   else
@@ -2239,7 +2278,7 @@ function build(x,y,type)
     structure.x = x;
     structure.y = y;
   }
-  else if (type == "deftow")
+  else if (type == "sligen")
   {
     mineralky -= 125;
     structure = new Structure();
@@ -2410,7 +2449,7 @@ document.addEventListener("mouseup", function(event)
               document.getElementById("drone_name").style.display = "block";
               document.getElementById("build_spool").style.display = "block";
               document.getElementById("build_evocham").style.display = "block";
-              document.getElementById("build_deftow").style.display = "block";
+              document.getElementById("build_sligen").style.display = "block";
               document.getElementById("minerals_name").style.display = "none" 
               document.getElementById("minerals_kapacita").style.display = "none";
             }
@@ -2424,7 +2463,7 @@ document.addEventListener("mouseup", function(event)
             document.getElementById("drone_name").style.display = "block";
             document.getElementById("build_spool").style.display = "block";
             document.getElementById("build_evocham").style.display = "block";
-            document.getElementById("build_deftow").style.display = "block";
+            document.getElementById("build_sligen").style.display = "block";
             document.getElementById("minerals_name").style.display = "none" 
             document.getElementById("minerals_kapacita").style.display = "none";          
           }
@@ -2494,26 +2533,6 @@ function wait_for_more_rush()
   }, waiting_time);
 }/*}}}*/
 
-function new_tower_tentacle()
-{/*{{{*/
-  for (let tower of Object.values(structures))
-  {
-    if (tower.am_I_selected == 1 && mineralky >= 110 && tower.number_of_tentacles < 3 && tower.type == "deftow")
-    {
-      mineralky -= 110;
-      tower.number_of_tentacles += 1;
-      document.getElementById("deftow_tententacles").textContent = "Tentacles:" + structure.number_of_tentacles;
-    }
-    else if (mineralky < 110)
-    {
-      document.getElementById("no_minerals").style.display = "block";
-      setTimeout(() => {
-      document.getElementById("no_minerals").style.display = "none";
-      },3500);  
-    }
-  }
-}/*}}}*/
-
 //buttons code
 /*{{{*/
 
@@ -2555,14 +2574,10 @@ document.getElementById("more_damega").addEventListener("click", function() {
 });
 
 //defend tower
-document.getElementById("build_deftow").addEventListener("click", function() {
-  new_deftow();
+document.getElementById("build_sligen").addEventListener("click", function() {
+  new_sligen();
 });
 
-//defend tower add tentacle
-document.getElementById("more_tower_tentacle").addEventListener("click", function() {
-  new_tower_tentacle();
-});
 /*}}}*/
 
 //dolble click select
@@ -2617,4 +2632,5 @@ document.addEventListener("mousedown", function(event)
     }, 200);
   }
 });/*}}}*/
+
 

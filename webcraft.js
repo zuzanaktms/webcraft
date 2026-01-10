@@ -1,3 +1,62 @@
+//class shoot 
+class Shoot
+{
+  constructor(x,y,cil_x,cil_y)
+  {
+    this.speed = 12;
+    this.x = x;
+    this.y = y;
+    this.x_cil = cil_x;
+    this.y_cil = cil_y;
+    this.id = g_id++;
+    this.target_id = 0;
+    this.type = "shoot";
+    this.damage = 8;
+    shoots[this.id] = this;
+  }
+
+  akce()
+  {
+    const xd = this.x_cil - this.x;
+    const yd = this.y_cil - this.y;
+    const d = Math.sqrt(xd*xd + yd*yd);
+    if (d <= this.speed)
+    {
+      this.x = this.x_cil;
+      this.y = this.y_cil;
+      for (let enemy of Object.values(enemy_units))
+      {
+        if (distance(this.x,this.y,enemy.x,enemy.y,50))
+        {
+          enemy.life -= this.damage;
+        }
+      }
+      delete shoots[this.id]
+    }
+    else
+    {  
+      this.x += xd/d * this.speed;
+      this.y += yd/d * this.speed;
+    }
+      }
+
+  draw()
+  {
+    ctx.save();
+    ctx.translate(this.x,this.y);
+
+    ctx.beginPath();
+    ctx.arc(0, 0, 5, 0,2 * Math.PI);
+    ctx.closePath();
+    ctx.fillStyle = "#68FF00";
+    ctx.fill();
+    ctx.stroke();
+    
+    ctx.restore();
+  }
+
+}
+
 //class enemy_unit
 /*{{{*/
 class Enemy_unit
@@ -239,12 +298,12 @@ class Enemy_unit
 class Unit
 {
   constructor()
-  {/*zc{{{*/
+{/*{{{*/
     this.figth = 0;
     this.hit_speed = 0;
     this.target_id = 0;
     this.target = 0;
-    this.nhit_damage = 5;
+    this.hit_damage = 5;
     this.velikost = 0;
     this.x = 0;
     this.y = 0;
@@ -323,7 +382,7 @@ class Unit
       ctx.fillStyle = "purple"
       ctx.fill();
       ctx.stroke();
-     
+        
       //left wing
       ctx.beginPath();
       ctx.moveTo(-4, -2);
@@ -348,23 +407,71 @@ class Unit
       ctx.fill();
       ctx.stroke();
     }
+    else if (this.type == "aciling")
+    {
+      if (this.am_I_selected == 1) 
+      {
+        ctx.beginPath();
+        ctx.arc(0, 5, 20, 0,2 * Math.PI);
+        ctx.strokeStyle = "green";
+        ctx.stroke();
+        ctx.strokeStyle = "black";
+      }
+      
+      //body
+      ctx.beginPath();
+      ctx.moveTo(0,-20);
+      ctx.lineTo(-5,-18);
+      ctx.lineTo(-8,0);
+      ctx.moveTo(0,-20);
+      ctx.lineTo(5,-18);
+      ctx.lineTo(8,0);
+      ctx.lineTo(-8,0);
+      ctx.stroke();
+      ctx.fillStyle = "purple";
+      ctx.fill();
+      ctx.stroke();
+
+      //arms
+      ctx.beginPath();
+      ctx.moveTo(-5,-18);
+      ctx.lineTo(-7,-21);
+      ctx.lineTo(-7,-24);
+      ctx.moveTo(5,-18);
+      ctx.lineTo(7,-21);
+      ctx.lineTo(7,-24);
+      ctx.closePath();
+      ctx.stroke();
+    
+      //acid bagg
+      ctx.beginPath();
+      ctx.arc(0, 13, 20, 0,2 * Math.PI);
+      ctx.closePath();
+      ctx.fillStyle = "#68FF00";
+      ctx.fill();
+      ctx.stroke();
+    }
     
     ctx.restore();
   }/*}}}*/
 
   akce()
   {//{{{
+    if (this.type == "aciling")
+    {
+      this.speed = 3;
+    }
     switch (this.action)
     {
-    case "none":
-      if (this.life <= 0)
-      {
-        supplied -= 1;
-        delete units[this.id]
-        delete all_your_units[this.id]
-      }
-      break;
-    case "move":     
+      case "none":
+        if (this.life <= 0)
+        {
+          supplied -= 1;
+          delete units[this.id]
+          delete all_your_units[this.id]
+        }
+        break;
+      case "move":     
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
         const d = Math.sqrt(xd*xd + yd*yd);
@@ -375,45 +482,80 @@ class Unit
             this.x = this.x_cil;
             this.y = this.y_cil;
           }
-          else
+          else if (this.type == "zergling")
           {
-          if (this.hit_speed == 0)
-          {
-            for (let enemy of Object.values(enemy_units))
+            if (this.hit_speed == 0)
             {
-              if (enemy.id == this.target_id)
+              for (let enemy of Object.values(enemy_units))
               {
-                sounds.zergling_fight.play();
-                enemy.life -= this.hit_damage;
-                if (enemy.life <= 0)
+                if (enemy.id == this.target_id)
                 {
-                  this.figth = 0;
+                  sounds.zergling_fight.play();
+                  enemy.life -= this.hit_damage;
+                  if (enemy.life <= 0)
+                  {
+                    this.figth = 0;
+                  }
+                  this.hit_speed = 1;
                 }
-                this.hit_speed = 1;
               }
             }
-          }
-          else
-          { 
-            this.hit_speed += 1;
-            if (this.hit_speed == 13)
-            {
-              this.hit_speed = 0;
-            }
-          }
-            
+            else
+            { 
+              this.hit_speed += 1;
+              if (this.hit_speed == 13)
+              {
+                this.hit_speed = 0;
+              }
+            } 
           }
         }
         else
         {  
-          this.x += xd/d * this.speed;
-          this.y += yd/d * this.speed;
-
-          let rad_angle = Math.atan2(yd,xd);
-          let deg_angle = rad_angle * 180 / Math.PI;
-          this.angle = 90 + deg_angle;
+          if (this.type == "aciling")
+          {
+            if (this.figth == 1)
+            {
+              if (this.type == "aciling" && this.figth == 1)
+              {
+                if (this.hit_speed == 0)
+                {
+                  for (let enemy of Object.values(enemy_units))
+                  {
+                    if (enemy.id == this.target_id)
+                    {
+                      let shoot_x_cil = enemy.x;
+                      let shoot_y_cil = enemy.y;
+                      new Shoot(this.x,this.y,shoot_x_cil,shoot_y_cil);
+                      this.hit_speed = 1;
+                    }
+                  }
+                }
+                else
+                {
+                  this.hit_speed += 1;
+                  if (this.hit_speed == 25)
+                  {
+                    this.hit_speed = 0;
+                  }
+                }
+              }
+            }
+            else
+            {
+              this.x += xd/d * this.speed;
+              this.y += yd/d * this.speed;
+            }
+          }
+          else
+          {
+            this.x += xd/d * this.speed;
+            this.y += yd/d * this.speed;
+          }
         }
-      break;
+        let rad_angle = Math.atan2(yd,xd);
+        let deg_angle = rad_angle * 180 / Math.PI;
+        this.angle = 90 + deg_angle;
     }
   }//}}}
 
@@ -440,6 +582,13 @@ class Unit
     }
   }
 //}}}
+
+  new_aciling()
+  {/*{{{*/
+    this.type = "aciling";
+    this.life = 60;
+    this.speed = 3;
+  }/*}}}*/
 }
 /*}}}*/
 
@@ -448,7 +597,7 @@ class Unit
 class Structure
 {
   constructor(x,y)
-  {//{{{
+{//{{{
     this.am_i_selected = 0;
     this.rally_point_x = 655;
     this.rally_point_y = 500;
@@ -978,7 +1127,7 @@ if (this.type == "spawn_pool")/*{{{*/
   {/*{{{*/
     if (this.queue_2.length)
     {
-      document.getElementById("ukazatel_upradgu").textContent = `Building: ${this.queue_2[0]}`;
+      document.getElementById("ukazatel_upradgu").textContent = `Upgrading: ${this.queue_2[0]}`;
 
       ++this.progress_2;
       if (build_length[this.queue_2[0]] <= this.progress_2)
@@ -997,7 +1146,7 @@ if (this.type == "spawn_pool")/*{{{*/
             zergling_speed = 1;
             for (let unit of Object.values(units))
             {
-              if (unit.type = "zergling")
+              if (unit.type == "zergling")
               {
                 unit.speed = 9.5;
               }
@@ -1014,6 +1163,14 @@ if (this.type == "spawn_pool")/*{{{*/
             {
               unit.hit_damage += 1;
             }
+            break;
+          case "can_aciling":
+            can_build_aciling = 1;
+            document.getElementById("upradge_complete").style.display = "block";
+            sounds.upradge_complete.play();
+            setTimeout(() => {
+            document.getElementById("upradge_complete").style.display = "none";
+            },3500);
             break;
           default:
             alert("undefined build/unit")
@@ -1042,7 +1199,6 @@ if (this.type == "spawn_pool")/*{{{*/
 //}}}
 
 //class dron
-
 /*{{{*/
 class Dron
 {
@@ -1301,7 +1457,7 @@ class Dron
 /*}}}*/
 
 //class mineral
-/*{{{*/
+/*{{{*/ 
 class Mineral
 {
   constructor(x,y)
@@ -1369,7 +1525,7 @@ class Mineral
 function draw_sligen_slime(x,y)
 {/*{{{*/
   ctx.beginPath();
-  ctx.arc(x,y, 275, 0,2 * Math.PI);
+  ctx.arc(x,y, 225, 0,2 * Math.PI);
   ctx.closePath();
   ctx.fillStyle = "#990099";
   ctx.fill();
@@ -1378,6 +1534,7 @@ function draw_sligen_slime(x,y)
 
 function distance(x,y,x1,y1,v)
 //{{{
+
 { 
   const xd = x - x1;
   const yd = y - y1;
@@ -1419,6 +1576,7 @@ build_length = {/*{{{*/
   "zergling": 125,
   "zergling_speed": 210,
   "damega": 225,
+  "can_aciling": 205,
 }/*}}}*/
 
 function load_sounds()
@@ -1441,8 +1599,7 @@ function load_sounds()
   }
 }/*}}}*/
 
-//Initialize
-
+//INIT
 //variables, values and dictionaries
 //{{{
 const canvas = document.getElementById("plocha");
@@ -1461,12 +1618,7 @@ let minerals = {};
 let drones = {};
 let structures = {};
 let select = {};
-let keys = {
-  up: 0,
-  down: 0,
-  left: 0,
-  right: 0,
-};
+let shoots = {};
 
 let enemy_units = {};
 
@@ -1512,6 +1664,7 @@ let screen_x = 0;
 let screen_y = 0;
 let max_screen_x = 100;
 let max_screen_y = 100; 
+let can_build_aciling = 0;
 /*}}}*/
 
 //function called in start
@@ -1584,21 +1737,47 @@ function akce()
       structure.stadium += 1
     }
   }
-
+  for (let shoot of Object.values(shoots))
+  {
+    shoot.akce();
+  }
   for (let dron of Object.values(drones))
   {
-//    for (let struct of Object.values(structures))
-//    {
-//      if (distance(dron.x,dron.y,struct.x,struct.y,275))
-//      {
-//        dron.speed = 8; 
-//      }
-//    }
+    for (let struct of Object.values(structures))
+    {
+      if (distance(dron.x,dron.y,struct.x,struct.y,225) && struct.type == "sligen")
+      {
+        dron.speed += 3;
+        break;
+      }
+      else
+      {
+        dron.speed = 5;  
+      }
+    }
     dron.akce();
   }
-  
   for (let unit of Object.values(units))
   {
+    for (let struct of Object.values(structures))
+    {
+      if (distance(unit.x,unit.y,struct.x,struct.y,225) && struct.type == "sligen")
+      {
+        unit.speed += 3;
+        break;
+      }
+      else
+      {
+        if (zergling_speed == 1)
+        {
+          unit.speed = 9.5;  
+        }
+        else
+        {
+          unit.speed = 7;
+        }
+      }
+    }
     unit.akce();
   }
   for (let enemy of Object.values(enemy_units))
@@ -1661,6 +1840,10 @@ function draw()
       draw_sligen_slime(structure.x,structure.y);
     }
   }
+  for (let shoot of Object.values(shoots))
+  {
+    shoot.draw();
+  }
   for (let unit of Object.values(units))
   {
     unit.draw();
@@ -1711,222 +1894,243 @@ function mousebutton(event)
 //{{{
 canvas.addEventListener("mousedown", function(event)
 {
- const rect = canvas.getBoundingClientRect();
- const x_click = event.clientX - rect.left;
- const y_click = event.clientY - rect.top;
- if (ukol == "none")
- {//{{{
-   if (mousebutton(event) == 0) {
-     if (Object.keys(all_your_units).length > 0)
-     {
-       for (let unit of Object.values(all_your_units)) {
-         unit.am_I_selected = 0;
-       }
-     }
-     for (let structure of Object.values(structures)) {
-       structure.am_I_selected = 0;
-     }
-     select = {};
-     document.getElementById("ukazatel_velikosti_units").style.display = "none";
-     document.getElementById("main_house_name").style.display = "none";
-     document.getElementById("evocham_name").style.display = "none";
-     document.getElementById("evocham_life").style.display = "none";
-     document.getElementById("Hatchery_lifes").style.display = "none";
-     document.getElementById("minerals_name").style.display = "none" 
-     document.getElementById("minerals_kapacita").style.display = "none";
-     document.getElementById("new_drone_button").style.display = "none";           
-     document.getElementById("build_spool").style.display = "none";
-     document.getElementById("build_evocham").style.display = "none";
-     document.getElementById("more_damega").style.display = "none";
-     document.getElementById("drone_name").style.display = "none"
-     document.getElementById("drone_lifes").style.display = "none";
-     document.getElementById("more_supply_button").style.display = "none";
-     document.getElementById("spool_name").style.display = "none";
-     document.getElementById("spool_life").style.display = "none";
-     document.getElementById("sligen_name").style.display = "none";
-     document.getElementById("sligen_life").style.display = "none";
-     document.getElementById("zergling_button").style.display = "none";
-     document.getElementById("zergling_lifes").style.display = "none";
-     document.getElementById("zergling_name").style.display = "none";
-     document.getElementById("fast_zergling_button").style.display = "none";
-     document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
-     document.getElementById("build_sligen").style.display = "none";
-
-     if (Object.keys(drones).length > 0)
-     {
-       for (let dron of Object.values(drones)) {
-         if (dron.click_drone(x_click,y_click)) {
-           dron.am_I_selected = 1;
-           document.getElementById("drone_name").style.display = "block";
-           document.getElementById("drone_lifes").textContent = "Lifes:" + dron.life;
-           document.getElementById("drone_lifes").style.display = "block";
-           document.getElementById("build_spool").style.display = "block";
-           document.getElementById("build_evocham").style.display = "block";
-           document.getElementById("build_sligen").style.display = "block";
-           document.getElementById("minerals_name").style.display = "none" 
-           document.getElementById("minerals_kapacita").style.display = "none";
-           sounds.dron_select.play();
-           select[dron.id] = dron;
-           break;
-         }
-       }
-     }
-     for (let mineral of Object.values(minerals)) {
-       if (mineral.touch(x_click,y_click)) { 
-         document.getElementById("minerals_name").style.display = "block";
-         document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
-         document.getElementById("minerals_kapacita").style.display = "block";
-         break;
-       }
-     }
-     for (let structure of Object.values(structures))
-     {
-       if (distance(structure.x,structure.y,x_click,y_click,50))
-       {
-         if (structure.type == "main_house")
-         {
-           select[structure.id] = structure.type;
-           document.getElementById("Hatchery_lifes").textContent = "Lifes:" + main_house_lifes;
-           document.getElementById("main_house_name").style.display = "block"
-           document.getElementById("Hatchery_lifes").style.display = "block";
-           document.getElementById("new_drone_button").style.display = "block"; 
-           document.getElementById("zergling_button").style.display = "block";
-           document.getElementById("more_supply_button").style.display = "block";
-           document.getElementById("ukazatel_velikosti_units").style.display = "block";
-           document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
-           structure.am_I_selected = 1;
-           break;
-         }
-         else if (structure.type == "spawn_pool")
-         {
-           select[structure.id] = structure.type;
-           document.getElementById("spool_name").style.display = "block";
-           document.getElementById("spool_life").style.display = "block";
-           document.getElementById("spool_life").textContent = "Lifes:" + structure.life;
-           document.getElementById("ukazatel_velikosti_units").style.display = "block";
-           document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
-           if (structure.stadium >= 100 && zergling_speed == 0)
-           {
-             document.getElementById("fast_zergling_button").style.display = "block";
-           }
-           break;
-         }
-         else if (structure.type == "evo_cham")
-         {
-           select[structure.id] = structure.type;
-           document.getElementById("evocham_name").style.display = "block";
-           document.getElementById("evocham_life").style.display = "block";
-           document.getElementById("evocham_life").textContent = "Lifes:" + structure.life;
-           if (structure.stadium >= 100 && damega_upgrade == 0 && damega_upgrading == 0)
-           {
-             document.getElementById("more_damega").style.display = "block";
-           }
-         }
-         else if (structure.type == "sligen")
-         {
-           structure.am_I_selected = 1;
-           select[structure.id] = structure.type;
-           document.getElementById("sligen_name").style.display = "block";
-           document.getElementById("sligen_life").style.display = "block";
-           document.getElementById("sligen_life").textContent = "Lifes:" + structure.life;
-         }
-       }
-     }
-     for (let unit of Object.values(units))
-     {
-       if (unit.click_zergling(x_click,y_click) && unit.type == "zergling")
-       {
-         unit.am_I_selected = 1;
-         select[unit.id] = unit.type;
-         document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
-         document.getElementById("zergling_lifes").style.display = "block";
-         document.getElementById("zergling_name").style.display = "block";
-         break;
-       }
-     }
-   }
- }//}}}
- else if (ukol == "building")
- {
-   let mozno = true;
-   for (let dron of Object.values(drones))
-   {
-    
-     if (dron.am_I_selected == 1 && dron.building == 1) 
-     {
-       for (let structure of Object.values(structures))
-       {
-         if (distance(structure.x,structure.y,x_click,y_click,175))
-         {
-           mozno = false;
-           break;
-         }
-       }
-       if (mozno)
-       {
-         for (let dron of Object.values(drones))
-         {
-           if (distance(dron.x,dron.y,x_click,y_click,100))
-           {
-             if (dron.am_I_selected == 0)
-             {
-               mozno = false;
-               break;
-             }
-           }
-         }
-       }
-       if (mozno)
-       {
-         for (let mineral of Object.values(minerals))
-         {
-           if (distance(mineral.x,mineral.y,x_click,y_click,120))
-           {
-             mozno = false;
-             break;
-           }
-         }
-       }
-       if (mozno)
-       {
-         for (let unit of Object.values(units))
-         {
-           if (distance(unit.x,unit.y,x_click,y_click,100))
-           {
-             mozno = false;
-             break;
-           }
-         }
-       }
-       if (mozno)
-       {
-         dron.building = 0;
-         dron.work = "building";
-         dron.move(x_click,y_click);
-         delete select[dron.id];
-
-        let sound = Math.floor(Math.random()*2);
-        if (sound == 1)
-        {
-          sounds.dron_command1.play();
+  const rect = canvas.getBoundingClientRect();
+  const x_click = event.clientX - rect.left;
+  const y_click = event.clientY - rect.top;
+  if (ukol == "none")
+{//{{{
+    if (mousebutton(event) == 0) {
+      if (Object.keys(all_your_units).length > 0)
+      {
+        for (let unit of Object.values(all_your_units)) {
+          unit.am_I_selected = 0;
         }
-        else
-        {
-          sounds.dron_command2.play();
-         }
-       }
-       else 
-       {
-         document.getElementById("no_space").style.display = "block";
-         setTimeout(() => {
-         document.getElementById("no_space").style.display = "none";
-         },3500);      
-       }
-     }
-   }
+      }
+      for (let structure of Object.values(structures)) {
+        structure.am_I_selected = 0;
+      }
+      select = {};
+      document.getElementById("ukazatel_velikosti_units").style.display = "none";
+      document.getElementById("main_house_name").style.display = "none";
+      document.getElementById("evocham_name").style.display = "none";
+      document.getElementById("evocham_life").style.display = "none";
+      document.getElementById("Hatchery_lifes").style.display = "none";
+      document.getElementById("minerals_name").style.display = "none" 
+      document.getElementById("minerals_kapacita").style.display = "none";
+      document.getElementById("new_drone_button").style.display = "none";           
+      document.getElementById("build_spool").style.display = "none";
+      document.getElementById("build_evocham").style.display = "none";
+      document.getElementById("more_damega").style.display = "none";
+      document.getElementById("drone_name").style.display = "none"
+      document.getElementById("drone_lifes").style.display = "none";
+      document.getElementById("more_supply_button").style.display = "none";
+      document.getElementById("spool_name").style.display = "none";
+      document.getElementById("spool_life").style.display = "none";
+      document.getElementById("sligen_name").style.display = "none";
+      document.getElementById("sligen_life").style.display = "none";
+      document.getElementById("zergling_button").style.display = "none";
+      document.getElementById("zergling_lifes").style.display = "none";
+      document.getElementById("zergling_name").style.display = "none";
+      document.getElementById("fast_zergling_button").style.display = "none";
+      document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
+      document.getElementById("build_sligen").style.display = "none";
+      document.getElementById("can_aciling").style.display = "none";
+      document.getElementById("evolve_to_aciling").style.display = "none";
+      document.getElementById("aciling_lifes").style.display = "none";
+      document.getElementById("aciling_name").style.display = "none";
 
-  ukol = "none";
- }
+      if (Object.keys(drones).length > 0)
+      {
+        for (let dron of Object.values(drones)) {
+          if (dron.click_drone(x_click,y_click)) {
+            dron.am_I_selected = 1;
+            document.getElementById("drone_name").style.display = "block";
+            document.getElementById("drone_lifes").textContent = "Lifes:" + dron.life;
+            document.getElementById("drone_lifes").style.display = "block";
+            document.getElementById("build_spool").style.display = "block";
+            document.getElementById("build_evocham").style.display = "block";
+            document.getElementById("build_sligen").style.display = "block";
+            document.getElementById("minerals_name").style.display = "none" 
+            document.getElementById("minerals_kapacita").style.display = "none";
+            sounds.dron_select.play();
+            select[dron.id] = dron;
+            break;
+          }
+        }
+      }
+      for (let mineral of Object.values(minerals)) {
+        if (mineral.touch(x_click,y_click)) { 
+          document.getElementById("minerals_name").style.display = "block";
+          document.getElementById("minerals_kapacita").textContent = "Capacity:" + mineral.kapacita;
+          document.getElementById("minerals_kapacita").style.display = "block";
+          break;
+        }
+      }
+      for (let structure of Object.values(structures))
+      {
+        if (distance(structure.x,structure.y,x_click,y_click,50))
+        {
+          if (structure.type == "main_house")
+          {
+            select[structure.id] = structure.type;
+            document.getElementById("Hatchery_lifes").textContent = "Lifes:" + main_house_lifes;
+            document.getElementById("main_house_name").style.display = "block"
+            document.getElementById("Hatchery_lifes").style.display = "block";
+            document.getElementById("new_drone_button").style.display = "block"; 
+            document.getElementById("zergling_button").style.display = "block";
+            document.getElementById("more_supply_button").style.display = "block";
+            document.getElementById("ukazatel_velikosti_units").style.display = "block";
+            document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
+            structure.am_I_selected = 1;
+            break;
+          }
+          else if (structure.type == "spawn_pool")
+          {
+            select[structure.id] = structure.type;
+            document.getElementById("spool_name").style.display = "block";
+            document.getElementById("spool_life").style.display = "block";
+            document.getElementById("spool_life").textContent = "Lifes:" + structure.life;
+            document.getElementById("ukazatel_velikosti_units").style.display = "block";
+            document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
+            if (structure.stadium >= 100 && zergling_speed == 0)
+            {
+              document.getElementById("fast_zergling_button").style.display = "block";
+            }
+            if (structure.stadium >= 100 && can_build_aciling == 0)
+            {
+              document.getElementById("can_aciling").style.display = "block";
+            }
+            break;
+          }
+          else if (structure.type == "evo_cham")
+          {
+            select[structure.id] = structure.type;
+            document.getElementById("evocham_name").style.display = "block";
+            document.getElementById("evocham_life").style.display = "block";
+            document.getElementById("evocham_life").textContent = "Lifes:" + structure.life;
+            if (structure.stadium >= 100 && damega_upgrade == 0 && damega_upgrading == 0)
+            {
+              document.getElementById("more_damega").style.display = "block";
+            }
+          }
+          else if (structure.type == "sligen")
+          {
+            structure.am_I_selected = 1;
+            select[structure.id] = structure.type;
+            document.getElementById("sligen_name").style.display = "block";
+            document.getElementById("sligen_life").style.display = "block";
+            document.getElementById("sligen_life").textContent = "Lifes:" + structure.life;
+          }
+        }
+      }
+      for (let unit of Object.values(units))
+      {
+        if (unit.click_zergling(x_click,y_click) && unit.type == "zergling")
+        {
+          unit.am_I_selected = 1;
+          select[unit.id] = "zergling";
+          document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
+          document.getElementById("zergling_lifes").style.display = "block";
+          document.getElementById("zergling_name").style.display = "block";
+          if (can_build_aciling)
+          {
+            document.getElementById("evolve_to_aciling").style.display = "block";
+          }
+          break;
+        }
+        else if (unit.click_zergling(x_click,y_click) && unit.type == "aciling")
+        {
+          unit.am_I_selected = 1;
+          select[unit.id] = "aciling";
+          document.getElementById("aciling_lifes").textContent = "Lifes:" + unit.life;
+          document.getElementById("aciling_lifes").style.display = "block";
+          document.getElementById("aciling_name").style.display = "block";
+          break;
+        }
+      }
+    }
+  }//}}}
+  else if (ukol == "building")
+  {
+    let mozno = true;
+    for (let dron of Object.values(drones))
+    {
+     
+      if (dron.am_I_selected == 1 && dron.building == 1) 
+      {
+        for (let structure of Object.values(structures))
+        {
+          if (distance(structure.x,structure.y,x_click,y_click,175))
+          {
+            mozno = false;
+            break;
+          }
+        }
+        if (mozno)
+        {
+          for (let dron of Object.values(drones))
+          {
+            if (distance(dron.x,dron.y,x_click,y_click,100))
+            {
+              if (dron.am_I_selected == 0)
+              {
+                mozno = false;
+                break;
+              }
+            }
+          }
+        }
+        if (mozno)
+        {
+          for (let mineral of Object.values(minerals))
+          {
+            if (distance(mineral.x,mineral.y,x_click,y_click,120))
+            {
+              mozno = false;
+              break;
+            }
+          }
+        }
+        if (mozno)
+        {
+          for (let unit of Object.values(units))
+          {
+            if (distance(unit.x,unit.y,x_click,y_click,100))
+            {
+              mozno = false;
+              break;
+            }
+          }
+        }
+        if (mozno)
+        {
+          dron.building = 0;
+          dron.work = "building";
+          dron.move(x_click,y_click);
+          delete select[dron.id];
+
+         let sound = Math.floor(Math.random()*2);
+         if (sound == 1)
+         {
+           sounds.dron_command1.play();
+         }
+         else
+         {
+           sounds.dron_command2.play();
+          }
+        }
+        else 
+        {
+          document.getElementById("no_space").style.display = "block";
+          setTimeout(() => {
+          document.getElementById("no_space").style.display = "none";
+          },3500);      
+        }
+      }
+    }
+
+   ukol = "none";
+  }
 });
 //}}}
   
@@ -1995,24 +2199,30 @@ canvas.addEventListener("mouseup", function(event)
         
         //moving to the position of mouse  
         let sound = Math.floor(Math.random()*2);
-        if (sound == 1)
+        if (unit.type == "zergling")
         {
-          sounds.zergling_command1.play();
-        }
-        else
-        {
-          sounds.zergling_command2.play();
+          if (sound == 1)
+          {
+            sounds.zergling_command1.play();
+          }
+          else
+          {
+            sounds.zergling_command2.play();
+          }
         }
         if (Object.keys(enemy_units).length > 0)
         {
           for (let enemy of Object.values(enemy_units))
           {
-            if (distance(enemy.x,enemy.y,x,y,40))
+            if (distance(enemy.x,enemy.y,x,y,65))
             {
               unit.figth = 1;
               unit.target_id = enemy.id;
               unit.move(enemy.x,enemy.y)
-              sounds.zergling_sound.play();
+              if (unit.type == "zergling")
+              {
+                sounds.zergling_sound.play();
+              }
             }
             else
             {
@@ -2093,6 +2303,12 @@ document.addEventListener("keyup", function(event)/*{{{*/
         u_damega();
       }
       break;
+    case "q":
+      if (can_build_aciling == 0)
+      {
+        u_aciling();
+      }
+      break;
     case "t":
       new_sligen();
       break;
@@ -2148,7 +2364,7 @@ function new_dron()
 
 function u_zergling_speed()
 {/*{{{*/
-  if (main_house.queue_2.length < 5 && mineralky >= 100)
+  if (main_house.queue_2.length < 5 && mineralky >= 100 && spawn_pool_exist == 1)
   {
     mineralky -= 100;
     main_house.queue_2.push("zergling_speed");
@@ -2179,6 +2395,32 @@ function u_damega()
     mineralky -= 100;
     main_house.queue_2.push("damega");
     damega_upgrading = 1;
+  }
+  else
+  {
+    if (mineralky < 100)
+    {
+      document.getElementById("no_minerals").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("no_minerals").style.display = "none";
+      },3500);      
+    }
+    else
+    {
+      document.getElementById("full_queue").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("full_queue").style.display = "none";
+      },3500);      
+    }
+  }
+}/*}}}*/
+
+function u_aciling()
+{/*{{{*/
+  if (main_house.queue_2.length < 5 && mineralky >= 100 && spawn_pool_exist == 1)
+  {
+    mineralky -= 100;
+    main_house.queue_2.push("can_aciling");
   }
   else
   {
@@ -2363,6 +2605,51 @@ function new_zergling()
   }
 }/*}}}*/
 
+function morf_to_aciling(select_unit_id)
+{/*{{{*/
+  if (mineralky >= 50 && can_build_aciling == 1)
+  {
+    mineralky -= 50;
+    for (let unit of Object.values(units))
+    {
+      if (unit.id == select_unit_id)
+      {
+        unit.new_aciling();
+      }
+    }
+  }
+  else
+  {
+    if (mineralky >= 50)
+    {
+      if (supply <= supplied)
+      { 
+        document.getElementById("no_supply").style.display = "block";
+        setTimeout(() => {
+        document.getElementById("no_supply").style.display = "none";
+        },3500);  
+      }
+      else
+      {
+        if (main_house.queue.length < 5)
+        {
+          document.getElementById("need_upgrade").style.display = "block";
+          setTimeout(() => {
+          document.getElementById("need_upgrade").style.display = "none";
+          },3500);  
+        }
+      }
+    }
+    else
+    {
+      document.getElementById("no_minerals").style.display = "block";
+      setTimeout(() => {
+      document.getElementById("no_minerals").style.display = "none";
+      },3500);  
+    }
+  }
+}/*}}}*/
+
 //multiple select code
 document.addEventListener("mousedown", function(event)/*{{{*/
 {/*{{{*/
@@ -2417,29 +2704,48 @@ document.addEventListener("mouseup", function(event)
           select[unit.id] = unit;
         }
       }
+      if (unit.x > minX && unit.x < maxX && unit.y > minY && unit.y < maxY)
+      {
+        unit.am_I_selected = 1;
+        if (unit.type == "aciling")
+        {
+          select[unit.id] = unit;
+        }
+      }
     }
     if (Object.keys(select).length >= 2)
     {
       for (let key in select)
       {
-        document.getElementById("ukazatel_velikosti_units").style.display = "none";
-        document.getElementById("main_house_name").style.display = "none";
-        document.getElementById("Hatchery_lifes").style.display = "none";
-        document.getElementById("minerals_name").style.display = "none" 
-        document.getElementById("minerals_kapacita").style.display = "none";
-        document.getElementById("new_drone_button").style.display = "none";           
-        document.getElementById("build_spool").style.display = "none";
-        document.getElementById("drone_name").style.display = "none"
-        document.getElementById("drone_lifes").style.display = "none";
-        document.getElementById("more_supply_button").style.display = "none";
-        document.getElementById("spool_name").style.display = "none";
-        document.getElementById("spool_life").style.display = "none";
-        document.getElementById("zergling_button").style.display = "none";
-        document.getElementById("zergling_lifes").style.display = "none";
-        document.getElementById("zergling_name").style.display = "none";
-        document.getElementById("fast_zergling_button").style.display = "none";
-        document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
-        document.getElementById("build_evocham").style.display = "none";
+
+      document.getElementById("ukazatel_velikosti_units").style.display = "none";
+      document.getElementById("main_house_name").style.display = "none";
+      document.getElementById("evocham_name").style.display = "none";
+      document.getElementById("evocham_life").style.display = "none";
+      document.getElementById("Hatchery_lifes").style.display = "none";
+      document.getElementById("minerals_name").style.display = "none" 
+      document.getElementById("minerals_kapacita").style.display = "none";
+      document.getElementById("new_drone_button").style.display = "none";           
+      document.getElementById("build_spool").style.display = "none";
+      document.getElementById("build_evocham").style.display = "none";
+      document.getElementById("more_damega").style.display = "none";
+      document.getElementById("drone_name").style.display = "none"
+      document.getElementById("drone_lifes").style.display = "none";
+      document.getElementById("more_supply_button").style.display = "none";
+      document.getElementById("spool_name").style.display = "none";
+      document.getElementById("spool_life").style.display = "none";
+      document.getElementById("sligen_name").style.display = "none";
+      document.getElementById("sligen_life").style.display = "none";
+      document.getElementById("zergling_button").style.display = "none";
+      document.getElementById("zergling_lifes").style.display = "none";
+      document.getElementById("zergling_name").style.display = "none";
+      document.getElementById("fast_zergling_button").style.display = "none";
+      document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
+      document.getElementById("build_sligen").style.display = "none";
+      document.getElementById("can_aciling").style.display = "none";
+      document.getElementById("evolve_to_aciling").style.display = "none";
+      document.getElementById("aciling_lifes").style.display = "none";
+      document.getElementById("aciling_name").style.display = "none";
         for (let key2 in select)
         {
           if (select[key2].type == "zergling")
@@ -2458,7 +2764,7 @@ document.addEventListener("mouseup", function(event)
               document.getElementById("zergling_name").style.display = "block";
             }
           }
-          else
+          else if (select[key2].type == "dron")
           {
             document.getElementById("drone_name").style.display = "block";
             document.getElementById("build_spool").style.display = "block";
@@ -2466,6 +2772,10 @@ document.addEventListener("mouseup", function(event)
             document.getElementById("build_sligen").style.display = "block";
             document.getElementById("minerals_name").style.display = "none" 
             document.getElementById("minerals_kapacita").style.display = "none";          
+          }
+          else
+          {
+            document.getElementById("aciling_name").style.display = "block";
           }
         }
       }
@@ -2517,7 +2827,7 @@ function rush()
 
 function wait_for_more_rush()
 {/*{{{*/
-  let waiting_time = Math.floor(Math.random()*0)+0;
+  let waiting_time = Math.floor(Math.random()*35000)+45000;
   setTimeout (() => {
   let i = -1;
   let number_f_r = Math.floor(Math.random()*6)+2;
@@ -2578,6 +2888,31 @@ document.getElementById("build_sligen").addEventListener("click", function() {
   new_sligen();
 });
 
+//upgrade aciling can build
+document.getElementById("can_aciling").addEventListener("click", function() {
+  if (can_build_aciling == 0)
+  {
+    u_aciling();
+  }
+});
+
+document.getElementById("evolve_to_aciling").addEventListener("click", function() {
+  if (can_build_aciling == 1)
+  {
+    let lenght_of_selected_things = Object.keys(select).length;
+    if (lenght_of_selected_things == 1)
+    {
+      for (let unit of Object.values(units))
+      {
+        if (unit.am_I_selected == 1)
+        {
+        morf_to_aciling(unit.id);
+        }
+      }
+    }
+  }
+});
+
 /*}}}*/
 
 //dolble click select
@@ -2617,8 +2952,11 @@ document.addEventListener("mousedown", function(event)
            {
              for (let unit of Object.values(units))
              {
-               unit.am_I_selected = 1;
-               select[unit.id] = unit;
+               if (unit.type == "zergling")
+               {
+                 unit.am_I_selected = 1;
+                 select[unit.id] = unit;
+               }
              }
              document.getElementById("zergling_lifes").textContent = "Lifes:" + unit.life;
              document.getElementById("zergling_lifes").style.display = "block";
@@ -2626,11 +2964,25 @@ document.addEventListener("mousedown", function(event)
              sounds.dron_select.play();
              clicks = 0;
            }
-         }
+           else if (unit.click_zergling(x_click,y_click) && unit.type == "aciling")
+           {
+             for (let unit of Object.values(units))
+             {
+               if (unit.type == "aciling")
+               {
+                 unit.am_I_selected = 1;
+                 select[unit.id] = unit;
+               }
+             }
+             document.getElementById("aciling_lifes").textContent = "Lifes:" + unit.life;
+             document.getElementById("aciling_lifes").style.display = "block";
+             document.getElementById("aciling_name").style.display = "block";
+             sounds.dron_select.play();
+             clicks = 0;
+           }
+        }
       }
       clicks = 0;
     }, 200);
   }
 });/*}}}*/
-
-

@@ -160,7 +160,7 @@ body {
  }
 
 #build_sligen {
-  background-color:#FFFFFF;
+  background-color:#ffffff;
   color:black;
   padding:10px 10px;
   font-size:15px;
@@ -174,3 +174,32 @@ body {
   background-color:#5b5b5b;
 }
 
+#can_aciling {
+  background-color:#ffffff;
+  color:black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition: background-color 0.3s;
+}
+
+#can_aciling:hover {
+  background-color:#5b5b5b;
+}
+
+#evolve_to_aciling {
+  background-color:#ffffff;
+  color:black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition: background-color 0.3s;
+}
+
+#evolve_to_aciling:hover {
+  background-color:#5b5b5b;
+}

@@ -528,6 +528,7 @@ class Unit
                       let shoot_y_cil = enemy.y;
                       new Shoot(this.x,this.y,shoot_x_cil,shoot_y_cil);
                       this.hit_speed = 1;
+                      sounds.aciling_fight.play();
                     }
                   }
                 }
@@ -1596,6 +1597,9 @@ function load_sounds()
     "zergling_sound" : new Audio("res/zergling_sound.wav"),
     "zergling_fight" : new Audio("res/zerglings_fight_sound.wav"),
     "zealots_blades" : new Audio("res/zealots_blades_sound.wav"),
+    "aciling_command1" : new Audio("res/aciling_command_sound.wav"),
+    "aciling_command2" : new Audio("res/aciling_command_sound2.wav"),
+    "aciling_fight" : new Audio("res/aciling_fire_sound.wav"),
   }
 }/*}}}*/
 
@@ -1938,6 +1942,7 @@ canvas.addEventListener("mousedown", function(event)
       document.getElementById("evolve_to_aciling").style.display = "none";
       document.getElementById("aciling_lifes").style.display = "none";
       document.getElementById("aciling_name").style.display = "none";
+      document.getElementById("dron_bury").style.display = "none";
 
       if (Object.keys(drones).length > 0)
       {
@@ -1950,6 +1955,7 @@ canvas.addEventListener("mousedown", function(event)
             document.getElementById("build_spool").style.display = "block";
             document.getElementById("build_evocham").style.display = "block";
             document.getElementById("build_sligen").style.display = "block";
+            document.getElementById("dron_bury").style.display = "block";
             document.getElementById("minerals_name").style.display = "none" 
             document.getElementById("minerals_kapacita").style.display = "none";
             sounds.dron_select.play();
@@ -2210,11 +2216,22 @@ canvas.addEventListener("mouseup", function(event)
             sounds.zergling_command2.play();
           }
         }
+        else if (unit.type == "aciling")
+        {
+          if (sound == 1)
+          {
+            sounds.aciling_command1.play();
+          }
+          else
+          {
+            sounds.aciling_command2.play();
+          }
+        }
         if (Object.keys(enemy_units).length > 0)
         {
           for (let enemy of Object.values(enemy_units))
           {
-            if (distance(enemy.x,enemy.y,x,y,65))
+            if (distance(enemy.x,enemy.y,x,y,80))
             {
               unit.figth = 1;
               unit.target_id = enemy.id;

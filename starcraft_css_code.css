@@ -1,5 +1,6 @@
 body {
   overflow:hidden;
+  margin: 0;
 }
 
 #new_drone_button {
@@ -125,10 +126,6 @@ body {
    width:300px;
 }
 
-body {
-  margin: 0;
-}
-
 #build_evocham {
   background-color:#FFFFFF;
   color:black;
@@ -201,5 +198,19 @@ body {
 }
 
 #evolve_to_aciling:hover {
+  background-color:#5b5b5b;
+}
+#dron_bury {
+  background-color:#ffffff;
+  color:black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition: background-color 0.3s;
+}
+
+#dron_bury:hover {
   background-color:#5b5b5b;
 }

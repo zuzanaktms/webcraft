@@ -200,7 +200,8 @@ body {
 #evolve_to_aciling:hover {
   background-color:#5b5b5b;
 }
-#dron_bury {
+
+#change_sligen_efect {
   background-color:#ffffff;
   color:black;
   padding:10px 10px;
@@ -211,6 +212,6 @@ body {
   transition: background-color 0.3s;
 }
 
-#dron_bury:hover {
+#change_sligen_efect:hover {
   background-color:#5b5b5b;
 }

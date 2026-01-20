@@ -1,8 +1,8 @@
 //class shoot 
-class Shoot
+class Shoot/*{{{*/
 {
   constructor(x,y,cil_x,cil_y)
-  {
+  {/*{{{*/
     this.speed = 12;
     this.x = x;
     this.y = y;
@@ -13,10 +13,9 @@ class Shoot
     this.type = "shoot";
     this.damage = 8;
     shoots[this.id] = this;
-  }
-
+  }/*}}}*/
   akce()
-  {
+  {/*{{{*/
     const xd = this.x_cil - this.x;
     const yd = this.y_cil - this.y;
     const d = Math.sqrt(xd*xd + yd*yd);
@@ -38,10 +37,9 @@ class Shoot
       this.x += xd/d * this.speed;
       this.y += yd/d * this.speed;
     }
-      }
-
+  }/*}}}*/
   draw()
-  {
+  {/*{{{*/
     ctx.save();
     ctx.translate(this.x,this.y);
 
@@ -53,9 +51,8 @@ class Shoot
     ctx.stroke();
     
     ctx.restore();
-  }
-
-}
+  }/*}}}*/
+}/*}}}*/
 
 //class enemy_unit
 /*{{{*/
@@ -590,17 +587,41 @@ class Unit
     this.life = 60;
     this.speed = 3;
   }/*}}}*/
-}
-/*}}}*/
 
-//class structure
-//{{{
-class Structure
-{
-  constructor(x,y)
-{//{{{
-    this.am_i_selected = 0;
-    this.rally_point_x = 655;
+  detect_enemy()
+  {
+    for (let enemy of Object.values(enemy_units))
+    {
+      if (this.figth == 0)
+      {
+        if (distance(this.x,this.y,enemy.x,enemy.y,200))
+        {
+          this.figth = 1;
+          this.target_id = enemy.id;
+          if (this.type == "zergling")
+          {
+            sounds.zergling_sound.play();
+          }
+        }
+      }
+      else if (!enemy_units.hasOwnProperty(this.target_id))
+      {
+        this.fight = 0;
+      }
+    }
+  }
+
+  }
+  /*}}}*/
+
+  //class structure
+  //{{{
+  class Structure
+  {
+    constructor(x,y)
+    {//{{{
+      this.am_i_selected = 0;
+      this.rally_point_x = 655;
     this.rally_point_y = 500;
     this.progress_2 = 0;
     this.progress = 0;
@@ -616,6 +637,7 @@ class Structure
     this.stadium = 5;
     this.rotate = Math.floor(Math.random()*360);
     this.number_of_tentacles = 1;
+    this.type_slime = 0;
   }//}}}
 
   draw()
@@ -802,8 +824,27 @@ if (this.type == "spawn_pool")/*{{{*/
           ctx.fillStyle = "purple";
           ctx.fill();
           ctx.stroke();
+          
+          let velikost = ((50) / 50) * 0.8;
+          ctx.scale(velikost,velikost);
+          
+          ctx.beginPath();
+          ctx.moveTo(0,0);
+          ctx.moveTo(-75,0);
+          ctx.lineTo(-45,-50);
+          ctx.lineTo(-17,-35);
+          ctx.lineTo(18,-48);
+          ctx.lineTo(67,2);
+          ctx.lineTo(12,35);
+          ctx.lineTo(-20,28);
+          ctx.closePath();
+          ctx.fillStyle = "grey";
+          ctx.fill();
 
-          let velikost = ((this.stadium - 50) / 50) * 0.8;
+          ctx.stroke();
+
+
+          velikost = ((this.stadium - 50) / 50) * 0.8;
           ctx.scale(velikost,velikost);
 
           ctx.beginPath();
@@ -1204,7 +1245,6 @@ if (this.type == "spawn_pool")/*{{{*/
 class Dron
 {
   constructor()
-
 {//{{{
     this.find_number = number_of_drones++;
     this.building = 0;
@@ -1523,12 +1563,25 @@ class Mineral
 //}}}
 }/*}}}*/
 
-function draw_sligen_slime(x,y)
+function draw_sligen_slime(x,y,id)
 {/*{{{*/
   ctx.beginPath();
   ctx.arc(x,y, 225, 0,2 * Math.PI);
   ctx.closePath();
-  ctx.fillStyle = "#990099";
+  for (let sligen of Object.values(structures))
+  {     
+    if (sligen.id == id)
+    {
+      if (sligen.type_slime == 0)
+      {
+        ctx.fillStyle = "#990099";
+      }
+      else
+      {
+        ctx.fillStyle = "#13AD18";
+      }
+    }
+  }
   ctx.fill();
   ctx.stroke();
 }/*}}}*/
@@ -1671,11 +1724,6 @@ let max_screen_y = 100;
 let can_build_aciling = 0;
 /*}}}*/
 
-//function called in start
-/*{{{*/
-wait_for_more_rush();
-/*}}}*/
-
 //drones made and position 
 /*{{{*/
 for (let i = 0;i < 12;i++)
@@ -1738,7 +1786,7 @@ function akce()
     structure.upradge_code();
     if (structure.stadium != 1 && structure.stadium < 100)
     {
-      structure.stadium += 1
+      structure.stadium += 1;
     }
   }
   for (let shoot of Object.values(shoots))
@@ -1783,6 +1831,7 @@ function akce()
       }
     }
     unit.akce();
+    unit.detect_enemy();
   }
   for (let enemy of Object.values(enemy_units))
   {
@@ -1818,7 +1867,7 @@ function akce()
 /*}}}*/
 
 function draw()
-//{{{
+//{{{i
 {
   if (main_house.queue > 0 && main_house.am_I_selected == 1)
   {
@@ -1841,7 +1890,7 @@ function draw()
   {
     if (structure.type == "sligen" && structure.stadium == 100)
     {
-      draw_sligen_slime(structure.x,structure.y);
+      draw_sligen_slime(structure.x,structure.y,structure.id);
     }
   }
   for (let shoot of Object.values(shoots))
@@ -1886,8 +1935,17 @@ function draw()
 }
 //}}}
 
-//action call
+//function call
 setInterval(akce,50);/*{{{*/
+
+let waiting_time = Math.floor(Math.random()*45000)+65000;
+
+setInterval(rush,waiting_time);
+setInterval(rush,waiting_time);
+setInterval(rush,waiting_time);
+setInterval(rush,waiting_time);
+setInterval(rush,waiting_time);
+setInterval(rush,waiting_time);
 
 function mousebutton(event)
 {
@@ -1942,7 +2000,8 @@ canvas.addEventListener("mousedown", function(event)
       document.getElementById("evolve_to_aciling").style.display = "none";
       document.getElementById("aciling_lifes").style.display = "none";
       document.getElementById("aciling_name").style.display = "none";
-      document.getElementById("dron_bury").style.display = "none";
+      document.getElementById("sligen_slime_type").style.display = "none";
+      document.getElementById("change_sligen_efect").style.display = "none";
 
       if (Object.keys(drones).length > 0)
       {
@@ -1955,7 +2014,6 @@ canvas.addEventListener("mousedown", function(event)
             document.getElementById("build_spool").style.display = "block";
             document.getElementById("build_evocham").style.display = "block";
             document.getElementById("build_sligen").style.display = "block";
-            document.getElementById("dron_bury").style.display = "block";
             document.getElementById("minerals_name").style.display = "none" 
             document.getElementById("minerals_kapacita").style.display = "none";
             sounds.dron_select.play();
@@ -2026,6 +2084,9 @@ canvas.addEventListener("mousedown", function(event)
             document.getElementById("sligen_name").style.display = "block";
             document.getElementById("sligen_life").style.display = "block";
             document.getElementById("sligen_life").textContent = "Lifes:" + structure.life;
+            document.getElementById("sligen_slime_type").style.display = "block";
+            document.getElementById("sligen_slime_type").textContent = "Slime type:" + structure.type_slime;
+            document.getElementById("change_sligen_efect").style.display = "block";
           }
         }
       }
@@ -2842,24 +2903,6 @@ function rush()
     enemy.action = "move";
 }/*}}}*/
 
-function wait_for_more_rush()
-{/*{{{*/
-  let waiting_time = Math.floor(Math.random()*35000)+45000;
-  setTimeout (() => {
-  let i = -1;
-  let number_f_r = Math.floor(Math.random()*6)+2;
-  while (i <= number_f_r)
-  {
-    rush();
-    i++
-  }
-  if (rase_of_enemy == 1)
-  {
-    sounds.zerglings_incoming.play();
-  }
-  }, waiting_time);
-}/*}}}*/
-
 //buttons code
 /*{{{*/
 
@@ -2913,6 +2956,28 @@ document.getElementById("can_aciling").addEventListener("click", function() {
   }
 });
 
+//change sligen type of slime
+document.getElementById("change_sligen_efect").addEventListener("click", function() {
+  let lenght_of_selected_things = Object.keys(select).length;
+  if (lenght_of_selected_things == 1)
+  {
+    for (let struct of Object.values(structures))
+    {
+      if (struct.am_I_selected == 1)
+      {
+        if (struct.type_slime = 0)
+        {
+          struct.type_slime = 1;
+        }
+        else
+        {
+          struct.type_slime = 0;
+        }
+      }
+    }
+  }
+});
+
 document.getElementById("evolve_to_aciling").addEventListener("click", function() {
   if (can_build_aciling == 1)
   {
@@ -2923,7 +2988,7 @@ document.getElementById("evolve_to_aciling").addEventListener("click", function(
       {
         if (unit.am_I_selected == 1)
         {
-        morf_to_aciling(unit.id);
+          morf_to_aciling(unit.id);
         }
       }
     }

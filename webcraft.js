@@ -1,7 +1,7 @@
 //class shoot 
 class Shoot/*{{{*/
 {
-  constructor(x,y,cil_x,cil_y)
+  constructor(x,y,cil_x,cil_y,odesilatel)
   {/*{{{*/
     this.speed = 12;
     this.x = x;
@@ -12,6 +12,7 @@ class Shoot/*{{{*/
     this.target_id = 0;
     this.type = "shoot";
     this.damage = 8;
+    this.odesilatel = odesilatel;
     shoots[this.id] = this;
   }/*}}}*/
   akce()
@@ -23,14 +24,28 @@ class Shoot/*{{{*/
     {
       this.x = this.x_cil;
       this.y = this.y_cil;
-      for (let enemy of Object.values(enemy_units))
+      if (this.odesilatel == 1)
       {
-        if (distance(this.x,this.y,enemy.x,enemy.y,50))
+        for (let enemy of Object.values(enemy_units))
         {
-          enemy.life -= this.damage;
+          if (distance(this.x,this.y,enemy.x,enemy.y,50))
+          {
+            enemy.life -= this.damage;
+          }
         }
+        delete shoots[this.id]
       }
-      delete shoots[this.id]
+      else
+      {
+        for (let dron of Object.values(drones))
+        {
+          if (distance(this.x,this.y,dron.x,dron.y,50))
+          {
+            dron.life -= (this.damage - 1) ;
+          }
+        }
+        delete shoots[this.id]
+      }
     }
     else
     {  
@@ -52,6 +67,7 @@ class Shoot/*{{{*/
     
     ctx.restore();
   }/*}}}*/
+
 }/*}}}*/
 
 //class enemy_unit
@@ -66,7 +82,7 @@ class Enemy_unit
     this.select_drone = 0;
     this.x = 0;
     this.y = 0;
-    this.angle = 0;
+    this.angle = 90;
     this.velikost = 0;
     this.id = g_id++;
     this.life = 40;
@@ -95,8 +111,7 @@ class Enemy_unit
     ctx.rotate(this.angle/180*Math.PI);
     
     if (this.type == "zergling" && rase_of_enemy == 1)
-    {
-      
+    { 
       //body
       ctx.beginPath();
       ctx.moveTo(-7,0);
@@ -166,7 +181,7 @@ class Enemy_unit
       ctx.fill();
       ctx.stroke();
     }
-    else if (rase_of_enemy == 2)
+    else if (this.type == "zergling" && rase_of_enemy == 2)
     {
       //body
       ctx.beginPath();
@@ -193,7 +208,41 @@ class Enemy_unit
     
       ctx.stroke();
     }
+    else if (this.type == "aciling")
+    { 
+      //body
+      ctx.beginPath();
+      ctx.moveTo(0,-20);
+      ctx.lineTo(-5,-18);
+      ctx.lineTo(-8,0);
+      ctx.moveTo(0,-20);
+      ctx.lineTo(5,-18);
+      ctx.lineTo(8,0);
+      ctx.lineTo(-8,0);
+      ctx.stroke();
+      ctx.fillStyle = "red";
+      ctx.fill();
+      ctx.stroke();
+
+      //arms
+      ctx.beginPath();
+      ctx.moveTo(-5,-18);
+      ctx.lineTo(-7,-21);
+      ctx.lineTo(-7,-24);
+      ctx.moveTo(5,-18);
+      ctx.lineTo(7,-21);
+      ctx.lineTo(7,-24);
+      ctx.closePath();
+      ctx.stroke();
     
+      //acid bagg
+      ctx.beginPath();
+      ctx.arc(0, 13, 20, 0,2 * Math.PI);
+      ctx.closePath();
+      ctx.fillStyle = "#68FF00";
+      ctx.fill();
+      ctx.stroke();
+    }
     ctx.restore();
   }/*}}}*/
 
@@ -229,7 +278,7 @@ class Enemy_unit
         const d = Math.sqrt(xd*xd + yd*yd);
         if (d <= this.speed)
         {
-          if (this.hit_speed == 0)
+          if (this.hit_speed == 0 && this.type == "zergling")
           {
             for (let dron of Object.values(all_your_units))
             {
@@ -251,7 +300,7 @@ class Enemy_unit
             }
           }
           else
-          { 
+          {
             this.hit_speed += 1;
             this.rotate = 0;
             if (this.hit_speed == 5)
@@ -270,14 +319,45 @@ class Enemy_unit
         }
         else
         {  
-          this.x += xd/d * this.speed;
-          this.y += yd/d * this.speed;
-
+          if (this.type == "aciling" && this.target_id != 0)
+          {
+            if (this.type == "aciling")
+            {
+              if (this.hit_speed == 0)
+              {
+                for (let dron of Object.values(drones))
+                {
+                  if (dron.id == this.target_id)
+                  {
+                    let shoot_x_cil = dron.x;
+                    let shoot_y_cil = dron.y;
+                    new Shoot(this.x,this.y,shoot_x_cil,shoot_y_cil,0);
+                    this.hit_speed = 1;
+                    sounds.aciling_fight.play();
+                    break;
+                  }
+                }
+              }
+              else
+              {
+                this.hit_speed += 1;
+                if (this.hit_speed == 25)
+                {
+                  this.hit_speed = 0;
+                }
+              }
+            }
+          }
+          else
+          {
+            this.x += xd/d * this.speed;
+            this.y += yd/d * this.speed;
+          }  
           let rad_angle = (Math.atan2(yd,xd) + this.rotate);
           let deg_angle = rad_angle * 180 / Math.PI;
           this.angle = 90 + deg_angle;
-        }
-      break;
+          break;
+      }
     }
   }//}}}
 
@@ -523,7 +603,7 @@ class Unit
                     {
                       let shoot_x_cil = enemy.x;
                       let shoot_y_cil = enemy.y;
-                      new Shoot(this.x,this.y,shoot_x_cil,shoot_y_cil);
+                      new Shoot(this.x,this.y,shoot_x_cil,shoot_y_cil,1);
                       this.hit_speed = 1;
                       sounds.aciling_fight.play();
                     }
@@ -614,7 +694,7 @@ class Unit
   }
   /*}}}*/
 
-  //class structure
+//class structure
   //{{{
   class Structure
   {
@@ -1938,14 +2018,8 @@ function draw()
 //function call
 setInterval(akce,50);/*{{{*/
 
-let waiting_time = Math.floor(Math.random()*45000)+65000;
-
-setInterval(rush,waiting_time);
-setInterval(rush,waiting_time);
-setInterval(rush,waiting_time);
-setInterval(rush,waiting_time);
-setInterval(rush,waiting_time);
-setInterval(rush,waiting_time);
+let waiting_time = Math.floor(Math.random()*40100)+55000;
+setInterval(rush_call,waiting_time);
 
 function mousebutton(event)
 {
@@ -2890,6 +2964,7 @@ function draw_select_square(x_s,y_s,x_e,y_e)
 function rush()
 {/*{{{*/
     enemy = new Enemy_unit();
+    let enemy_type = Math.round(Math.random() * 1) + 1;
     let attacker_y = Math.floor(Math.random()*500);
     let drone_ids = Object.keys(drones);
     let id_idx = Math.floor(Math.random() * drone_ids.length);
@@ -2897,11 +2972,29 @@ function rush()
     zergling_rush = 1;
     enemy.target_id = drones[target].id;
     enemy.target = drones[target];
-    enemy.type = "zergling";  
+    if (enemy_type == 1)
+    {
+      enemy.type = "aciling";  
+    }
+    else
+    {
+      enemy.type = "zergling";
+    }
     enemy.x = 25;
     enemy.y = attacker_y;
     enemy.action = "move";
 }/*}}}*/
+
+function rush_call()
+{
+  let i = 0;
+  let enemy_number = Math.floor(Math.random() * 5) + 5;
+  while (i <= enemy_number)
+  {
+    rush();
+    i += 1;
+  }
+}
 
 //buttons code
 /*{{{*/

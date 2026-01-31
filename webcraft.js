@@ -15,6 +15,7 @@ class Shoot/*{{{*/
     this.odesilatel = odesilatel;
     shoots[this.id] = this;
   }/*}}}*/
+  
   akce()
   {/*{{{*/
     const xd = this.x_cil - this.x;
@@ -34,6 +35,7 @@ class Shoot/*{{{*/
           }
         }
         delete shoots[this.id]
+        return;
       }
       else
       {
@@ -45,6 +47,7 @@ class Shoot/*{{{*/
           }
         }
         delete shoots[this.id]
+        return;
       }
     }
     else
@@ -52,11 +55,12 @@ class Shoot/*{{{*/
       this.x += xd/d * this.speed;
       this.y += yd/d * this.speed;
     }
-  }/*}}}*/
+}/*}}}*/
+  
   draw()
   {/*{{{*/
     ctx.save();
-    ctx.translate(this.x,this.y);
+    ctx.translate((this.x - screen_x),(this.y - screen_y));
 
     ctx.beginPath();
     ctx.arc(0, 0, 5, 0,2 * Math.PI);
@@ -107,7 +111,7 @@ class Enemy_unit
   draw()
   {/*{{{*/
     ctx.save();
-    ctx.translate(this.x,this.y);
+    ctx.translate((this.x - screen_x),(this.y - screen_y));
     ctx.rotate(this.angle/180*Math.PI);
     
     if (this.type == "zergling" && rase_of_enemy == 1)
@@ -321,7 +325,7 @@ class Enemy_unit
         {  
           if (this.type == "aciling" && this.target_id != 0)
           {
-            if (this.type == "aciling")
+            if (this.type == "aciling" && d <= 450)
             {
               if (this.hit_speed == 0)
               {
@@ -346,6 +350,11 @@ class Enemy_unit
                   this.hit_speed = 0;
                 }
               }
+            }
+            else
+            {
+              this.x += xd/d * this.speed;
+              this.y += yd/d * this.speed;
             }
           }
           else
@@ -394,6 +403,7 @@ class Unit
     this.x_cil = this.x;
     this.y_cil = this.y;
     this.type = "none";
+    this.normal_life = 0;
     units[this.id] = this;
     all_your_units[this.id] = this;
   }/*}}}*/
@@ -401,7 +411,7 @@ class Unit
   draw()
   {/*{{{*/
     ctx.save();
-    ctx.translate(this.x,this.y);
+    ctx.translate((this.x - screen_x),(this.y - screen_y));
     ctx.rotate(this.angle/180*Math.PI);
     
     if (this.type == "zergling")
@@ -547,7 +557,7 @@ class Unit
           delete units[this.id]
           delete all_your_units[this.id]
         }
-        break;
+        return;
       case "move":     
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
@@ -589,33 +599,30 @@ class Unit
         }
         else
         {  
-          if (this.type == "aciling")
+          if (this.type == "aciling" && d <= 450)
           {
-            if (this.figth == 1)
+            if (this.type == "aciling" && this.figth == 1)
             {
-              if (this.type == "aciling" && this.figth == 1)
+              if (this.hit_speed == 0)
               {
-                if (this.hit_speed == 0)
+                for (let enemy of Object.values(enemy_units))
                 {
-                  for (let enemy of Object.values(enemy_units))
+                  if (enemy.id == this.target_id)
                   {
-                    if (enemy.id == this.target_id)
-                    {
-                      let shoot_x_cil = enemy.x;
-                      let shoot_y_cil = enemy.y;
-                      new Shoot(this.x,this.y,shoot_x_cil,shoot_y_cil,1);
-                      this.hit_speed = 1;
-                      sounds.aciling_fight.play();
-                    }
+                    let shoot_x_cil = enemy.x;
+                    let shoot_y_cil = enemy.y;
+                    new Shoot(this.x,this.y,shoot_x_cil,shoot_y_cil,1);
+                    this.hit_speed = 1;
+                    sounds.aciling_fight.play();
                   }
                 }
-                else
+              }
+              else
+              {
+                this.hit_speed += 1;
+                if (this.hit_speed == 25)
                 {
-                  this.hit_speed += 1;
-                  if (this.hit_speed == 25)
-                  {
-                    this.hit_speed = 0;
-                  }
+                  this.hit_speed = 0;
                 }
               }
             }
@@ -647,8 +654,8 @@ class Unit
   click_zergling(x,y)
 //{{{
   { 
-    const xd = x - this.x;
-    const yd = y - this.y;
+    const xd = x - (this.x - screen_x);
+    const yd = y - (this.y - screen_y);
     const d = Math.sqrt(xd*xd + yd*yd);
     if (d >= this.velikost) 
     {
@@ -665,14 +672,14 @@ class Unit
   {/*{{{*/
     this.type = "aciling";
     this.life = 60;
-    this.speed = 3;
+    this.speed = 4;
   }/*}}}*/
 
   detect_enemy()
-  {
+  {/*{{{*/
     for (let enemy of Object.values(enemy_units))
     {
-      if (this.figth == 0)
+      if (this.figth == 0 && this.action != "move")
       {
         if (distance(this.x,this.y,enemy.x,enemy.y,200))
         {
@@ -686,13 +693,12 @@ class Unit
       }
       else if (!enemy_units.hasOwnProperty(this.target_id))
       {
-        this.fight = 0;
+        this.figth = 0;
       }
     }
-  }
-
-  }
-  /*}}}*/
+  }/*}}}*/
+}
+/*}}}*/
 
 //class structure
   //{{{
@@ -702,22 +708,22 @@ class Unit
     {//{{{
       this.am_i_selected = 0;
       this.rally_point_x = 655;
-    this.rally_point_y = 500;
-    this.progress_2 = 0;
-    this.progress = 0;
-    this.queue_2 = [];
-    this.queue = [];
-    this.building = "none";
-    this.id = g_id++;
-    structures[this.id] = this;
-    this.x = x;
-    this.y = y;
-    this.type = 0;
-    this.life = 1000;
-    this.stadium = 5;
-    this.rotate = Math.floor(Math.random()*360);
-    this.number_of_tentacles = 1;
-    this.type_slime = 0;
+      this.rally_point_y = 500;
+      this.progress_2 = 0;
+      this.progress = 0;
+      this.queue_2 = [];
+      this.queue = [];
+      this.building = "none";
+      this.id = g_id++;
+      structures[this.id] = this;
+      this.x = x;
+      this.y = y;
+      this.type = 0;
+      this.life = 1000;
+      this.stadium = 5;
+      this.rotate = Math.floor(Math.random()*360);
+      this.number_of_tentacles = 1;
+      this.type_slime = 0;
   }//}}}
 
   draw()
@@ -726,7 +732,7 @@ class Unit
     if (this.type == "main_house")/*{{{*/
     {
       ctx.save();
-      ctx.translate(this.x,this.y);
+      ctx.translate((this.x - screen_x),(this.y - screen_y));
       
 
       //square(body of house)
@@ -817,7 +823,7 @@ if (this.type == "spawn_pool")/*{{{*/
         spawn_pool_exist = 1;
 
         ctx.save();
-        ctx.translate(this.x,this.y);
+        ctx.translate((this.x - screen_x),(this.y - screen_y));
         
         ctx.beginPath();
         ctx.moveTo(0,0);
@@ -951,7 +957,7 @@ if (this.type == "spawn_pool")/*{{{*/
       if (this.stadium == 100)
       {
         ctx.save();
-        ctx.translate(this.x,this.y);
+        ctx.translate((this.x - screen_x),(this.y - screen_y));
         
         //body of house
         ctx.beginPath();
@@ -1049,7 +1055,7 @@ if (this.type == "spawn_pool")/*{{{*/
     if (this.type == "sligen")/*{{{*/
     {
       ctx.save();
-      ctx.translate(this.x,this.y);
+      ctx.translate((this.x - screen_x),(this.y - screen_y));
       if (this.stadium < 50)
       {
         if (this.stadium == 5 || this.stadium == 15 || this.stadium == 25 || this.stadium == 35 || this.stadium == 45)
@@ -1174,7 +1180,8 @@ if (this.type == "spawn_pool")/*{{{*/
             let dron = new Dron();
             dron.x = this.x;
             dron.y = this.y;
-            dron.move
+            dron.move();
+            dron.normal_life = 45;
             let number = Math.floor(Math.random()*mineral_list.length); 
             let trg_mineral = mineral_list[number];
             dron.my_mineral= trg_mineral;  
@@ -1191,6 +1198,7 @@ if (this.type == "spawn_pool")/*{{{*/
             zergling.y = this.y;
             zergling.move(this.rally_point_x,this.rally_point_y);
             zergling.life = 40;
+            zergling.normal_life = 40;
             main_house.building = "none";      
             sounds.zergling_morph.play();
             if (zergling_speed == 1)
@@ -1351,7 +1359,7 @@ class Dron
   {//{{{
     
     ctx.save();
-    ctx.translate(this.x,this.y);
+    ctx.translate((this.x - screen_x),(this.y - screen_y));
     ctx.rotate(this.angle/180*Math.PI);
 
 
@@ -1465,7 +1473,7 @@ class Dron
           document.getElementById("drone_lifes").style.display = "none";
         }
       }
-      break;
+      return;
     case "move":     
         if (this.life <= 0)
         {
@@ -1514,7 +1522,7 @@ class Dron
               document.getElementById("drone_name").style.display = "none"
               document.getElementById("drone_lifes").style.display = "none";
             }
-            supplied - 1;
+            supplied -= 1;
             delete drones[this.id]
             delete all_your_units[this.id]
             break;
@@ -1561,8 +1569,8 @@ class Dron
   click_drone(x,y)
 //{{{
   { 
-    const xd = x - this.x;
-    const yd = y - this.y;
+    const xd = x - (this.x - screen_x);
+    const yd = y - (this.y - screen_y);
     const d = Math.sqrt(xd*xd + yd*yd);
     if (d >= 20) 
     {
@@ -1595,7 +1603,7 @@ class Mineral
   draw()
   {//{{{
     ctx.save();
-    ctx.translate(this.x,this.y);  
+    ctx.translate((this.x - screen_x),(this.y - screen_y));
     ctx.beginPath();
 
     if (this.typ == 1)
@@ -1628,8 +1636,8 @@ class Mineral
   touch(x,y)
 //{{{
   { 
-    const xd = x - this.x;
-    const yd = y - this.y;
+    const xd = x - (this.x - screen_x);
+    const yd = y - (this.y - screen_y);
     const d = Math.sqrt(xd*xd + yd*yd);
     if (d >= 100) 
     {
@@ -1646,7 +1654,7 @@ class Mineral
 function draw_sligen_slime(x,y,id)
 {/*{{{*/
   ctx.beginPath();
-  ctx.arc(x,y, 225, 0,2 * Math.PI);
+  ctx.arc((x - screen_x),(y - screen_y), 225, 0,2 * Math.PI);
   ctx.closePath();
   for (let sligen of Object.values(structures))
   {     
@@ -1756,6 +1764,7 @@ let drones = {};
 let structures = {};
 let select = {};
 let shoots = {};
+let keys = {};
 
 let enemy_units = {};
 
@@ -1799,8 +1808,6 @@ let znaceni = 0;
 let damega_upgrading = 0;
 let screen_x = 0;
 let screen_y = 0;
-let max_screen_x = 100;
-let max_screen_y = 100; 
 let can_build_aciling = 0;
 /*}}}*/
 
@@ -1810,6 +1817,7 @@ for (let i = 0;i < 12;i++)
 {
   let dron = new Dron();
   dron.x = 50*i;
+  dron.normal_life = 45;
 }
 
 for (let dron of Object.values(drones))
@@ -1877,14 +1885,46 @@ function akce()
   {
     for (let struct of Object.values(structures))
     {
-      if (distance(dron.x,dron.y,struct.x,struct.y,225) && struct.type == "sligen")
+      if (distance(dron.x,dron.y,struct.x,struct.y,225) && struct.type == "sligen" && struct.stadium >= 100)
       {
-        dron.speed += 3;
+        if (struct.type_slime == 0)
+        {
+          dron.speed += 3;
+          if (dron.life != dron.normal_life)
+          {
+            dron.life = dron.normal_life;
+          }
+        }
+        else if (dron.life == dron.normal_life)
+        {
+          dron.life += 5;
+        }
         break;
       }
       else
       {
-        dron.speed = 5;  
+        if (struct.type_slime == 0)
+        {
+          if (dron.type == "zergling")
+          {
+            if (zergling_speed == 1)
+            {
+              dron.speed = 9.5;  
+            }
+            else
+            {
+              dron.speed = 7;  
+            }
+          }
+          else
+          {
+            dron.speed = 4;
+          }
+        }
+        else if (struct.type_slime == 1)
+        {
+          dron.life = dron.normal_life;
+        }
       }
     }
     dron.akce();
@@ -1893,20 +1933,45 @@ function akce()
   {
     for (let struct of Object.values(structures))
     {
-      if (distance(unit.x,unit.y,struct.x,struct.y,225) && struct.type == "sligen")
+      if (distance(unit.x,unit.y,struct.x,struct.y,225) && struct.type == "sligen" && struct.stadium >= 100)
       {
-        unit.speed += 3;
+        if (struct.type_slime == 0)
+        {
+          unit.speed += 3;
+          if (unit.life != unit.normal_life)
+          {
+            unit.life = unit.normal_life;
+          }
+        }
+        else if (unit.life == unit.normal_life)
+        {
+          unit.life += 5;
+        }
         break;
       }
       else
       {
-        if (zergling_speed == 1)
+        if (struct.type_slime == 0)
         {
-          unit.speed = 9.5;  
+          if (unit.type == "zergling")
+          {
+            if (zergling_speed == 1)
+            {
+              unit.speed = 9.5;  
+            }
+            else
+            {
+              unit.speed = 7;  
+            }
+          }
+          else
+          {
+            unit.speed = 4;
+          }
         }
-        else
+        else if (struct.type_slime == 1)
         {
-          unit.speed = 7;
+          unit.life = unit.normal_life;
         }
       }
     }
@@ -1941,13 +2006,14 @@ function akce()
       }
     }
   }
+  move_the_screen();
   draw();
 }
 
 /*}}}*/
 
 function draw()
-//{{{i
+//{{{
 {
   if (main_house.queue > 0 && main_house.am_I_selected == 1)
   {
@@ -2106,7 +2172,7 @@ canvas.addEventListener("mousedown", function(event)
       }
       for (let structure of Object.values(structures))
       {
-        if (distance(structure.x,structure.y,x_click,y_click,50))
+        if (distance((structure.x - screen_x),(structure.y - screen_y),x_click,y_click,50))
         {
           if (structure.type == "main_house")
           {
@@ -2329,7 +2395,7 @@ canvas.addEventListener("mouseup", function(event)
         else
         {
           dron.work = "move";
-          dron.move(x,y)
+          dron.move((x - screen_x),(y - screen_y))
         }
       }
     }
@@ -2370,7 +2436,7 @@ canvas.addEventListener("mouseup", function(event)
             {
               unit.figth = 1;
               unit.target_id = enemy.id;
-              unit.move(enemy.x,enemy.y)
+              unit.move((enemy.x - screen_x),(enemy.y - screen_y))
               if (unit.type == "zergling")
               {
                 sounds.zergling_sound.play();
@@ -2380,7 +2446,7 @@ canvas.addEventListener("mouseup", function(event)
             {
               unit.figth = 0;
               unit.action = "move";
-              unit.move(x,y)
+              unit.move((x - screen_x),(y - screen_y))
             }
           }
         }
@@ -2388,7 +2454,7 @@ canvas.addEventListener("mouseup", function(event)
         {
           unit.figth = 0;
           unit.action = "move";
-          unit.move(x,y)
+          unit.move((x - screen_x),(y - screen_y))
         }
       }
     }
@@ -2409,8 +2475,8 @@ canvas.addEventListener("mouseup", function(event)
         }
         if (mozno2)
         {
-          structure.rally_point_x = x;
-          structure.rally_point_y = y;
+          structure.rally_point_x = (x - screen_x);
+          structure.rally_point_y = (y - screen_y);
         }
       }
     }
@@ -2423,8 +2489,8 @@ canvas.addEventListener("contextmenu", function(event)
 });
 //}}}
 
-//keysdown control
-document.addEventListener("keyup", function(event)/*{{{*/
+document.addEventListener("keyup", function(event)
+/*{{{*/
 {
     switch (event.key)
     {
@@ -2450,7 +2516,7 @@ document.addEventListener("keyup", function(event)/*{{{*/
       }
       break;
     case "m":
-      if (damega_upgrade == 0)
+      if (damega_upgrade == 0 && damega_upgrading == 0)
       {
         u_damega();
       }
@@ -2459,6 +2525,18 @@ document.addEventListener("keyup", function(event)/*{{{*/
       if (can_build_aciling == 0)
       {
         u_aciling();
+      }
+      break;
+    case "a":
+      if (Object.keys(select).length == 1 && can_build_aciling == 1)
+      {
+        for (let unit of Object.values(units))
+        {
+          if (unit.am_I_selected == 1 && unit.type == "zergling")
+          {
+            morf_to_aciling(unit.id);
+          }
+        }
       }
       break;
     case "t":
@@ -2474,10 +2552,49 @@ document.addEventListener("keyup", function(event)/*{{{*/
       keys.up = 0;
       break;
     case "ArrowDown":
-      keys_down = 0;
+      keys.down = 0;
       break;
    }
 });/*}}}*/
+
+document.addEventListener("keydown", function(event)/*{{{*/
+{/*{{{*/
+    switch(event.key)
+    {
+    case "ArrowRight":
+      keys.right = 1;
+      break;
+    case "ArrowLeft":
+      keys.left = 1;
+      break;
+    case "ArrowUp":
+      keys.up = 1;
+      break;
+    case "ArrowDown":
+      keys.down = 1;
+      break;
+    }
+});/*}}}*/
+
+function move_the_screen()
+{/*{{{*/
+  if (keys.right == 1)
+  {
+    screen_x += 5;
+  }
+  if (keys.left == 1)
+  {
+    screen_x -= 5;
+  }
+  if (keys.up == 1)
+  {
+    screen_y += 5;
+  }
+  if (keys.down == 1)
+  {
+    screen_y -= 5;
+  }
+}/*}}}*/
 
 function new_dron()
 {/*{{{*/
@@ -2986,7 +3103,7 @@ function rush()
 }/*}}}*/
 
 function rush_call()
-{
+{/*{{{*/
   let i = 0;
   let enemy_number = Math.floor(Math.random() * 5) + 5;
   while (i <= enemy_number)
@@ -2994,11 +3111,12 @@ function rush_call()
     rush();
     i += 1;
   }
-}
+}/*}}}*/
 
 //buttons code
 /*{{{*/
 
+//new drone
 new_drone_button.addEventListener("click", function() {
   new_dron();
 });
@@ -3030,7 +3148,7 @@ document.getElementById("build_evocham").addEventListener("click", function() {
 
 //more_damage
 document.getElementById("more_damega").addEventListener("click", function() {
-    if (damega_upgrade == 0)
+    if (damega_upgrade == 0 && damega_upgrading == 0)
     {
       u_damega();
     }
@@ -3058,7 +3176,7 @@ document.getElementById("change_sligen_efect").addEventListener("click", functio
     {
       if (struct.am_I_selected == 1)
       {
-        if (struct.type_slime = 0)
+        if (struct.type_slime == 0)
         {
           struct.type_slime = 1;
         }
@@ -3071,6 +3189,7 @@ document.getElementById("change_sligen_efect").addEventListener("click", functio
   }
 });
 
+//evolve to aciling
 document.getElementById("evolve_to_aciling").addEventListener("click", function() {
   if (can_build_aciling == 1)
   {

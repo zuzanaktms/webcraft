@@ -325,7 +325,7 @@ class Enemy_unit
         {  
           if (this.type == "aciling" && this.target_id != 0)
           {
-            if (this.type == "aciling" && d <= 450)
+            if (this.type == "aciling" && d <= 450 && this.target_id != 0 && lenght_of_drones >= 1)
             {
               if (this.hit_speed == 0)
               {
@@ -701,10 +701,10 @@ class Unit
 /*}}}*/
 
 //class structure
-  //{{{
-  class Structure
-  {
-    constructor(x,y)
+//{{{i
+class Structure
+{
+  constructor(x,y)
     {//{{{
       this.am_i_selected = 0;
       this.rally_point_x = 655;
@@ -862,7 +862,7 @@ if (this.type == "spawn_pool")/*{{{*/
       if (this.stadium != 100)
       {
         ctx.save();
-        ctx.translate(this.x,this.y);
+        ctx.translate((this.x - screen_x),(this.y - screen_y));
         if (this.stadium <= 50)
         {
           if (this.stadium == 5 || this.stadium == 15 || this.stadium == 25 || this.stadium == 35 || this.stadium == 45)
@@ -1017,7 +1017,7 @@ if (this.type == "spawn_pool")/*{{{*/
       if (this.stadium != 100)
         {
           ctx.save();
-          ctx.translate(this.x,this.y);
+          ctx.translate((this.x - screen_x),(this.y - screen_y));
           if (this.stadium == 5 || this.stadium == 15 || this.stadium == 25 || this.stadium == 35 || this.stadium == 45 || this.stadium == 55 || this.stadium == 65 || this.stadium == 75 || this.stadium == 85 || this.stadium == 95)
           {
             ctx.scale(1,1);
@@ -1162,7 +1162,7 @@ if (this.type == "spawn_pool")/*{{{*/
   }//}}}
 
   build_units()
-  {//{{{
+  {//i{{{
     if (this.queue.length)
     {
       document.getElementById("ukazatel_casu").textContent = `Building: ${this.queue[0]}`;
@@ -1469,6 +1469,8 @@ class Dron
         if (this.am_I_selected == 1)
         {
           document.getElementById("build_spool").style.display = "none";
+          document.getElementById("build_evocham").style.display = "none";
+          document.getElementById("build_sligen").style.display = "none";
           document.getElementById("drone_name").style.display = "none"
           document.getElementById("drone_lifes").style.display = "none";
         }
@@ -1481,6 +1483,7 @@ class Dron
           {
             document.getElementById("build_spool").style.display = "none";
             document.getElementById("build_evocham").style.display = "none";
+            document.getElementById("build_sligen").style.display = "none";
             document.getElementById("drone_name").style.display = "none"
             document.getElementById("drone_lifes").style.display = "none";
           }
@@ -1513,7 +1516,7 @@ class Dron
             this.move(this.my_mineral.x,90);
             break;
           case "building":    
-            build(this.x,this.y,this.building_thing);
+            build((this.x - screen_x),(this.y - screen_y),this.building_thing);
             if (this.am_I_selected == 1)
             {
               document.getElementById("build_spool").style.display = "none";
@@ -1746,7 +1749,7 @@ function load_sounds()
 
 //INIT
 //variables, values and dictionaries
-//{{{
+//{{{i
 const canvas = document.getElementById("plocha");
 const ctx = canvas.getContext("2d");
 
@@ -1809,6 +1812,8 @@ let damega_upgrading = 0;
 let screen_x = 0;
 let screen_y = 0;
 let can_build_aciling = 0;
+let lenght_of_drones = 0;
+let pauza = 0;
 /*}}}*/
 
 //drones made and position 
@@ -1868,146 +1873,150 @@ for (let dron of Object.values(drones))
 function akce()
 /*{{{*/
 {
-  for (let structure of Object.values(structures))
+  if (pauza == 0)
   {
-    structure.build_units();
-    structure.upradge_code();
-    if (structure.stadium != 1 && structure.stadium < 100)
+    lenght_of_drones = Object.keys(drones).length;
+    for (let structure of Object.values(structures))
     {
-      structure.stadium += 1;
-    }
-  }
-  for (let shoot of Object.values(shoots))
-  {
-    shoot.akce();
-  }
-  for (let dron of Object.values(drones))
-  {
-    for (let struct of Object.values(structures))
-    {
-      if (distance(dron.x,dron.y,struct.x,struct.y,225) && struct.type == "sligen" && struct.stadium >= 100)
+      structure.build_units();
+      structure.upradge_code();
+      if (structure.stadium != 1 && structure.stadium < 100)
       {
-        if (struct.type_slime == 0)
+        structure.stadium += 1;
+      }
+    }
+    for (let shoot of Object.values(shoots))
+    {
+      shoot.akce();
+    }
+    for (let dron of Object.values(drones))
+    {
+      for (let struct of Object.values(structures))
+      {
+        if (distance(dron.x,dron.y,struct.x,struct.y,225) && struct.type == "sligen" && struct.stadium >= 100)
         {
-          dron.speed += 3;
-          if (dron.life != dron.normal_life)
+          if (struct.type_slime == 0)
+          {
+            dron.speed += 3;
+            if (dron.life != dron.normal_life)
+            {
+              dron.life = dron.normal_life;
+            }
+          }
+          else if (dron.life == dron.normal_life)
+          {
+            dron.life += 5;
+          }
+          break;
+        }
+        else
+        {
+          if (struct.type_slime == 0)
+          {
+            if (dron.type == "zergling")
+            {
+              if (zergling_speed == 1)
+              {
+                dron.speed = 9.5;  
+              }
+              else
+              {
+                dron.speed = 7;  
+              }
+            }
+            else
+            {
+              dron.speed = 4;
+            }
+          }
+          else if (struct.type_slime == 1)
           {
             dron.life = dron.normal_life;
           }
         }
-        else if (dron.life == dron.normal_life)
-        {
-          dron.life += 5;
-        }
-        break;
       }
-      else
+      dron.akce();
+    }
+    for (let unit of Object.values(units))
+    {
+      for (let struct of Object.values(structures))
       {
-        if (struct.type_slime == 0)
+        if (distance(unit.x,unit.y,struct.x,struct.y,225) && struct.type == "sligen" && struct.stadium >= 100)
         {
-          if (dron.type == "zergling")
+          if (struct.type_slime == 0)
           {
-            if (zergling_speed == 1)
+            unit.speed += 3;
+            if (unit.life != unit.normal_life)
             {
-              dron.speed = 9.5;  
+              unit.life = unit.normal_life;
+            }
+          }
+          else if (unit.life == unit.normal_life)
+          {
+            unit.life += 5;
+          }
+          break;
+        }
+        else
+        {
+          if (struct.type_slime == 0)
+          {
+            if (unit.type == "zergling")
+            {
+              if (zergling_speed == 1)
+              {
+                unit.speed = 9.5;  
+              }
+              else
+              {
+                unit.speed = 7;  
+              }
             }
             else
             {
-              dron.speed = 7;  
+              unit.speed = 4;
             }
           }
-          else
-          {
-            dron.speed = 4;
-          }
-        }
-        else if (struct.type_slime == 1)
-        {
-          dron.life = dron.normal_life;
-        }
-      }
-    }
-    dron.akce();
-  }
-  for (let unit of Object.values(units))
-  {
-    for (let struct of Object.values(structures))
-    {
-      if (distance(unit.x,unit.y,struct.x,struct.y,225) && struct.type == "sligen" && struct.stadium >= 100)
-      {
-        if (struct.type_slime == 0)
-        {
-          unit.speed += 3;
-          if (unit.life != unit.normal_life)
+          else if (struct.type_slime == 1)
           {
             unit.life = unit.normal_life;
           }
         }
-        else if (unit.life == unit.normal_life)
-        {
-          unit.life += 5;
-        }
-        break;
       }
-      else
+      unit.akce();
+      unit.detect_enemy();
+    }
+    for (let enemy of Object.values(enemy_units))
+    {
+      let select_x = 0;
+      let select_y = 0;
+      for (let dron of Object.values(drones))
       {
-        if (struct.type_slime == 0)
+        if (dron.id == enemy.target_id)
         {
-          if (unit.type == "zergling")
-          {
-            if (zergling_speed == 1)
-            {
-              unit.speed = 9.5;  
-            }
-            else
-            {
-              unit.speed = 7;  
-            }
-          }
-          else
-          {
-            unit.speed = 4;
-          }
+          select_y = dron.y;
+          select_x = dron.x;
         }
-        else if (struct.type_slime == 1)
+      } 
+      enemy.move(select_x,select_y);
+      enemy.akce();
+    }
+    for (let unit of Object.values(units))
+    {
+      if (unit.figth == 1)
+      {
+        for (let enemy of Object.values(enemy_units))
         {
-          unit.life = unit.normal_life;
+          if (enemy.id == unit.target_id)
+          {
+            unit.move(enemy.x,enemy.y);
+          }
         }
       }
     }
-    unit.akce();
-    unit.detect_enemy();
+    move_the_screen();
+    draw();
   }
-  for (let enemy of Object.values(enemy_units))
-  {
-    let select_x = 0;
-    let select_y = 0;
-    for (let dron of Object.values(drones))
-    {
-      if (dron.id == enemy.target_id)
-      {
-        select_y = dron.y;
-        select_x = dron.x;
-      }
-    } 
-    enemy.move(select_x,select_y);
-    enemy.akce();
-  }
-  for (let unit of Object.values(units))
-  {
-    if (unit.figth == 1)
-    {
-      for (let enemy of Object.values(enemy_units))
-      {
-        if (enemy.id == unit.target_id)
-        {
-          unit.move(enemy.x,enemy.y);
-        }
-      }
-    }
-  }
-  move_the_screen();
-  draw();
 }
 
 /*}}}*/
@@ -2085,15 +2094,25 @@ function draw()
 setInterval(akce,50);/*{{{*/
 
 let waiting_time = Math.floor(Math.random()*40100)+55000;
-setInterval(rush_call,waiting_time);
+setInterval(check_can_call_rush,waiting_time);
 
 function mousebutton(event)
 {
   return(event.button)
-}/*}}}*/
+}
+
+function check_can_call_rush()
+{
+  if (pauza == 0)
+  {
+    rush_call();
+  }
+}
+
+/*}}}*/
 
 //selecting
-//{{{
+//i{{{
 canvas.addEventListener("mousedown", function(event)
 {
   const rect = canvas.getBoundingClientRect();
@@ -2313,7 +2332,7 @@ canvas.addEventListener("mousedown", function(event)
         {
           dron.building = 0;
           dron.work = "building";
-          dron.move(x_click,y_click);
+          dron.move((x_click - screen_x),(y_click - screen_y));
           delete select[dron.id];
 
          let sound = Math.floor(Math.random()*2);
@@ -2348,8 +2367,8 @@ canvas.addEventListener("mouseup", function(event)
   if (mousebutton(event) == 2) 
   {
     const rect2 = canvas.getBoundingClientRect();
-    const x = event.clientX - rect2.left;
-    const y = event.clientY - rect2.top;
+    const x = ((event.clientX - rect2.left) + screen_x);
+    const y = ((event.clientY - rect2.top) + screen_y);
     for (let dron of Object.values(drones))
     {
       if (dron.am_I_selected == 1)
@@ -2395,7 +2414,7 @@ canvas.addEventListener("mouseup", function(event)
         else
         {
           dron.work = "move";
-          dron.move((x - screen_x),(y - screen_y))
+          dron.move(x,y)
         }
       }
     }
@@ -2436,7 +2455,7 @@ canvas.addEventListener("mouseup", function(event)
             {
               unit.figth = 1;
               unit.target_id = enemy.id;
-              unit.move((enemy.x - screen_x),(enemy.y - screen_y))
+              unit.move(enemy.x,enemy.y)
               if (unit.type == "zergling")
               {
                 sounds.zergling_sound.play();
@@ -2446,7 +2465,7 @@ canvas.addEventListener("mouseup", function(event)
             {
               unit.figth = 0;
               unit.action = "move";
-              unit.move((x - screen_x),(y - screen_y))
+              unit.move(x,y)
             }
           }
         }
@@ -2454,7 +2473,7 @@ canvas.addEventListener("mouseup", function(event)
         {
           unit.figth = 0;
           unit.action = "move";
-          unit.move((x - screen_x),(y - screen_y))
+          unit.move(x,y)
         }
       }
     }
@@ -2475,8 +2494,8 @@ canvas.addEventListener("mouseup", function(event)
         }
         if (mozno2)
         {
-          structure.rally_point_x = (x - screen_x);
-          structure.rally_point_y = (y - screen_y);
+          structure.rally_point_x = x;
+          structure.rally_point_y = y;
         }
       }
     }
@@ -2489,110 +2508,116 @@ canvas.addEventListener("contextmenu", function(event)
 });
 //}}}
 
-document.addEventListener("keyup", function(event)
+//key control
 /*{{{*/
+if (pauza == 0)
 {
-    switch (event.key)
-    {
-    case "d":
-      new_dron();
-      break;
-    case "z":
-      new_zergling();
-      break;
-    case "v":
-      new_supply_chamber();
-      break;
-    case "s":
-      new_spool();
-      break;
-    case "e":
-      new_evocham();
-      break;
-    case "w":
-      if (zergling_speed == 0)
+  document.addEventListener("keyup", function(event)
+  /*{{{*/
+  {
+      switch (event.key)
       {
-        u_zergling_speed();
-      }
-      break;
-    case "m":
-      if (damega_upgrade == 0 && damega_upgrading == 0)
-      {
-        u_damega();
-      }
-      break;
-    case "q":
-      if (can_build_aciling == 0)
-      {
-        u_aciling();
-      }
-      break;
-    case "a":
-      if (Object.keys(select).length == 1 && can_build_aciling == 1)
-      {
-        for (let unit of Object.values(units))
+      case "d":
+        new_dron();
+        break;
+      case "z":
+        new_zergling();
+        break;
+      case "v":
+        new_supply_chamber();
+        break;
+      case "s":
+        new_spool();
+        break;
+      case "e":
+        new_evocham();
+        break;
+      case "w":
+        if (zergling_speed == 0)
         {
-          if (unit.am_I_selected == 1 && unit.type == "zergling")
+          u_zergling_speed();
+        }
+        break;
+      case "m":
+        if (damega_upgrade == 0 && damega_upgrading == 0)
+        {
+          u_damega();
+        }
+        break;
+      case "q":
+        if (can_build_aciling == 0)
+        {
+          u_aciling();
+        }
+        break;
+      case "a":
+        if (Object.keys(select).length == 1 && can_build_aciling == 1)
+        {
+          for (let unit of Object.values(units))
           {
-            morf_to_aciling(unit.id);
+            if (unit.am_I_selected == 1 && unit.type == "zergling")
+            {
+              morf_to_aciling(unit.id);
+            }
           }
         }
-      }
-      break;
-    case "t":
-      new_sligen();
-      break;
-    case "ArrowRight":
-      keys.right = 0;
-      break;
-    case "ArrowLeft":
-      keys.left = 0;
-      break;
-    case "ArrowUp":
-      keys.up = 0;
-      break;
-    case "ArrowDown":
-      keys.down = 0;
-      break;
-   }
-});/*}}}*/
+        break;
+      case "t":
+        new_sligen();
+        break;
+      case "ArrowRight":
+        keys.right = 0;
+        break;
+      case "ArrowLeft":
+        keys.left = 0;
+        break;
+      case "ArrowUp":
+        keys.up = 0;
+        break;
+      case "ArrowDown":
+        keys.down = 0;
+        break;
+     }
+  });/*}}}*/
 
-document.addEventListener("keydown", function(event)/*{{{*/
-{/*{{{*/
-    switch(event.key)
-    {
-    case "ArrowRight":
-      keys.right = 1;
-      break;
-    case "ArrowLeft":
-      keys.left = 1;
-      break;
-    case "ArrowUp":
-      keys.up = 1;
-      break;
-    case "ArrowDown":
-      keys.down = 1;
-      break;
-    }
-});/*}}}*/
+  document.addEventListener("keydown", function(event)
+  {/*{{{*/
+      switch(event.key)
+      {
+      case "ArrowRight":
+        keys.right = 1;
+        break;
+      case "ArrowLeft":
+        keys.left = 1;
+        break;
+      case "ArrowUp":
+        keys.up = 1;
+        break;
+      case "ArrowDown":
+        keys.down = 1;
+        break;
+      }
+  });/*}}}*/
+}
+/*}}}*/
 
 function move_the_screen()
 {/*{{{*/
-  if (keys.right == 1)
-  {
-    screen_x += 5;
-  }
-  if (keys.left == 1)
+  if (keys.right == 1 && (screen_x + 5 ) >= 0)
   {
     screen_x -= 5;
   }
-  if (keys.up == 1)
+  if (keys.left == 1 && (screen_x - 5) <= 500)
   {
-    screen_y += 5;
+    screen_x += 5;
   }
-  if (keys.down == 1)
+  if (keys.up == 1 && (screen_y + 5) >= 0)
   {
     screen_y -= 5;
+  }
+  if (keys.down == 1 && (screen_y - 5) <= 500)
+  {
+    screen_y += 5;
   }
 }/*}}}*/
 
@@ -3080,26 +3105,29 @@ function draw_select_square(x_s,y_s,x_e,y_e)
 
 function rush()
 {/*{{{*/
-    enemy = new Enemy_unit();
-    let enemy_type = Math.round(Math.random() * 1) + 1;
-    let attacker_y = Math.floor(Math.random()*500);
-    let drone_ids = Object.keys(drones);
-    let id_idx = Math.floor(Math.random() * drone_ids.length);
-    let target = drone_ids[id_idx];
-    zergling_rush = 1;
-    enemy.target_id = drones[target].id;
-    enemy.target = drones[target];
-    if (enemy_type == 1)
+    if (lenght_of_drones >= 1)
     {
-      enemy.type = "aciling";  
+      enemy = new Enemy_unit();
+      let enemy_type = Math.round(Math.random() * 1) + 1;
+      let attacker_y = Math.floor(Math.random()*500);
+      let drone_ids = Object.keys(drones);
+      let id_idx = Math.floor(Math.random() * drone_ids.length);
+      let target = drone_ids[id_idx];
+      zergling_rush = 1;
+      enemy.target_id = drones[target].id;
+      enemy.target = drones[target];
+      if (enemy_type == 1)
+      {
+        enemy.type = "aciling";  
+      }
+      else
+      {
+        enemy.type = "zergling";
+      }
+      enemy.x = 25;
+      enemy.y = attacker_y;
+      enemy.action = "move";
     }
-    else
-    {
-      enemy.type = "zergling";
-    }
-    enemy.x = 25;
-    enemy.y = attacker_y;
-    enemy.action = "move";
 }/*}}}*/
 
 function rush_call()
@@ -3207,6 +3235,17 @@ document.getElementById("evolve_to_aciling").addEventListener("click", function(
   }
 });
 
+//pause button code
+document.getElementById("pause").addEventListener("click" ,function() {
+  if (pauza == 0)
+  {
+    pauza = 1;
+  }
+  else
+  {
+    pauza = 0;
+  }
+});
 /*}}}*/
 
 //dolble click select
@@ -3280,3 +3319,4 @@ document.addEventListener("mousedown", function(event)
     }, 200);
   }
 });/*}}}*/
+

@@ -215,3 +215,18 @@ body {
 #change_sligen_efect:hover {
   background-color:#5b5b5b;
 }
+
+#pause {
+  background-color:#ffffff;
+  color:black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition: background-color 0.3s;
+}
+
+#pause:hover {
+  background-color:#5b5b5b;
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Webcraft (defend your base wiht zergs)</title>
+    <title>Webcraft zerg strategy game</title>
     <meta charset=UTF-8>
     <link rel="stylesheet" href="starcraft_css_code.css">
     <link rel="icon" type="image/svg+xml" href="res/favicon2.svg">
@@ -12,7 +12,7 @@
         <canvas id="plocha"></canvas>
       </div>
       <div>
-        <button id ="pause">Pause game</button>
+        <button id ="pause">Pause game(P)</button>
         <h1 id="miner.">minerals:</h1>
         <h1 id="supply"></h1>
         <div>
@@ -21,6 +21,7 @@
           <button id="build_spool" style="display: none">Morph to spawning pool(S) 150</button> 
           <button id="build_evocham" style="display: none">Morph to evolution chember(E) 100</button> 
           <button id="build_sligen" style="display: none">Morph to slime generator(T) 125</button> 
+          <button id="build_mintow" style="display: none">Morph to mining tower(M) 100</button>
         </div>
         <div>
           <h1 id="main_house_name" style="display: none">Hatchery</h1>
@@ -59,6 +60,10 @@
           <h1 id="sligen_life" style="display: none"></h1>
           <h1 id="sligen_slime_type" style="display: none"></h1>
           <button id="change_sligen_efect" style="display: none ">Change slime generator efect (increase life or speed)</button>
+        </div>
+        <div>
+          <h1 id="mintow_name" style="display: none">Mining tower</h1>
+          <h1 id="mintow_life" style="display: none"></h1>
         </div>
           <div id="ukazatel_velikosti_units">
             <div id="ukazatel_casu" width="1%" >

@@ -540,7 +540,7 @@ class Unit
     }
     
     ctx.restore();
-  }/*}}}*/
+  }/*}}}i*/
 
   akce()
   {//{{{
@@ -562,7 +562,7 @@ class Unit
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
         const d = Math.sqrt(xd*xd + yd*yd);
-        if (d <= this.speed)
+        if (d <= this.speed && this.type != "aciling")
         {
           if (this.figth == 0)
           {
@@ -701,7 +701,7 @@ class Unit
 /*}}}*/
 
 //class structure
-//{{{i
+//{{{
 class Structure
 {
   constructor(x,y)
@@ -722,8 +722,15 @@ class Structure
       this.life = 1000;
       this.stadium = 5;
       this.rotate = Math.floor(Math.random()*360);
-      this.number_of_tentacles = 1;
-      this.type_slime = 0;
+      if (this.type == "sligen")
+      {
+        this.number_of_tentacles = 1;
+        this.type_slime = 0;
+      }
+      if (this.type == "mintow")
+      {
+        this.timer_of_move = 0;
+      }
   }//}}}
 
   draw()
@@ -1159,6 +1166,107 @@ if (this.type == "spawn_pool")/*{{{*/
       }
       ctx.restore();
     }/*}}}*/
+//mining tower
+      if (this.type == "mintow")/*{{{*/
+      {
+        ctx.save();
+        ctx.translate(this.x,this.y);
+        if (this.stadium < 50)
+        {
+          if (this.stadium == 5 || this.stadium == 15 || this.stadium == 25 || this.stadium == 35 || this.stadium == 45)
+          {
+            ctx.scale(0.7,0.7);
+          }
+          else if  (this.stadium == 0 || this.stadium == 10 || this.stadium == 20 || this.stadium == 30 || this.stadium == 40 || this.stadium == 50)
+          {
+            ctx.scale(0.4,0.4);
+          }
+          ctx.beginPath();
+          ctx.moveTo(0,0);
+          ctx.moveTo(-70,0);
+          ctx.lineTo(-50,-45);
+          ctx.lineTo(-21,-60);
+          ctx.lineTo(-10,-55);
+          ctx.lineTo(20,-47);
+          ctx.lineTo(40,-30);
+          ctx.lineTo(72,3);
+          ctx.lineTo(55,20);
+          ctx.lineTo(30,30);
+          ctx.lineTo(-2,33);
+          ctx.lineTo(-35,36);
+          ctx.lineTo(-70,0);
+          ctx.closePath();
+          ctx.fillStyle = "#741B47";
+          ctx.fill();
+          ctx.stroke();
+          
+          ctx.restore();
+        }
+        else if (this.stadium >= 50 && this.stadium < 65)
+        {
+          ctx.beginPath();
+          ctx.arc(0,0, 45, 0,2 * Math.PI);
+          ctx.fillStyle = "#741B47";
+          ctx.fill();
+          ctx.closePath();
+          ctx.stroke();
+        }
+        else if (this.stadium >= 65 && this.stadium < 80)
+        {
+          ctx.beginPath();
+          ctx.arc(0,0, 45, 0,2 * Math.PI);
+          ctx.fillStyle = "#741B47";
+          ctx.fill();
+          ctx.closePath();
+          ctx.stroke();
+          
+          ctx.beginPath();
+          ctx.moveTo(-15,15);
+          ctx.lineTo(-15,-15);
+          ctx.lineTo(15,-15);
+          ctx.lineTo(15,15);
+          ctx.lineTo(-15,15);
+          ctx.fillStyle = "#741B47";
+          ctx.fill();
+          ctx.closePath();
+          ctx.stroke();
+        }
+        else 
+        {
+          ctx.beginPath();
+          ctx.arc(0,0, 45, 0,2 * Math.PI);
+          ctx.fillStyle = "#741B47";
+          ctx.fill();
+          ctx.closePath();
+          ctx.stroke();
+          
+          ctx.beginPath();
+          ctx.moveTo(-15,15);
+          ctx.lineTo(-15,-15);
+          ctx.lineTo(15,-15);
+          ctx.lineTo(15,15);
+          ctx.lineTo(-15,15);
+          ctx.fillStyle = "#741B47";
+          ctx.fill();
+          ctx.closePath();
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(0,0, 7.5, 0,2 * Math.PI);
+          if (this.timer_of_move > 109 && this.timer_of_move < 124)
+          {
+            ctx.fillStyle = "#2A93D4";
+          }
+          else
+          {
+            ctx.fillStyle = "#2AD4C4";
+          }
+          ctx.fill();
+          ctx.closePath();
+          ctx.stroke();
+        }
+        ctx.restore();
+      }/*}}}*/
   }//}}}
 
   build_units()
@@ -1522,6 +1630,7 @@ class Dron
               document.getElementById("build_spool").style.display = "none";
               document.getElementById("build_evocham").style.display = "none";
               document.getElementById("build_sligen").style.display = "none";
+              document.getElementById("build_mintow").style.display = "none";
               document.getElementById("drone_name").style.display = "none"
               document.getElementById("drone_lifes").style.display = "none";
             }
@@ -1698,7 +1807,7 @@ function distance(x,y,x1,y1,v)
 function rally_point_draw(x,y)
 {/*{{{*/
   ctx.save();
-  ctx.translate(x,y)
+  ctx.translate((x - screen_x),(y - screen_y))
   
   ctx.beginPath();
   ctx.moveTo(0,0);
@@ -1749,7 +1858,7 @@ function load_sounds()
 
 //INIT
 //variables, values and dictionaries
-//{{{i
+//{{{
 const canvas = document.getElementById("plocha");
 const ctx = canvas.getContext("2d");
 
@@ -1814,6 +1923,7 @@ let screen_y = 0;
 let can_build_aciling = 0;
 let lenght_of_drones = 0;
 let pauza = 0;
+let number_of_mintow = 0;
 /*}}}*/
 
 //drones made and position 
@@ -1897,13 +2007,16 @@ function akce()
         {
           if (struct.type_slime == 0)
           {
-            dron.speed += 3;
-            if (dron.life != dron.normal_life)
+            if (dron.speed == 4)
+            {
+              dron.speed = 8;
+            }
+            if (dron.life > dron.normal_life)
             {
               dron.life = dron.normal_life;
             }
           }
-          else if (dron.life == dron.normal_life)
+          else if (dron.life == dron.normal_life && struct.type_slime == 1)
           {
             dron.life += 5;
           }
@@ -2092,8 +2205,9 @@ function draw()
 
 //function call
 setInterval(akce,50);/*{{{*/
+setInterval(get_minerals,25000);
 
-let waiting_time = Math.floor(Math.random()*40100)+55000;
+let waiting_time = Math.floor(Math.random()*60100)+75000;
 setInterval(check_can_call_rush,waiting_time);
 
 function mousebutton(event)
@@ -2112,7 +2226,7 @@ function check_can_call_rush()
 /*}}}*/
 
 //selecting
-//i{{{
+//{{{
 canvas.addEventListener("mousedown", function(event)
 {
   const rect = canvas.getBoundingClientRect();
@@ -2155,12 +2269,15 @@ canvas.addEventListener("mousedown", function(event)
       document.getElementById("fast_zergling_button").style.display = "none";
       document.getElementById("ukazatel_velikosti_upradges").style.display = "none";
       document.getElementById("build_sligen").style.display = "none";
+      document.getElementById("build_mintow").style.display = "none";
       document.getElementById("can_aciling").style.display = "none";
       document.getElementById("evolve_to_aciling").style.display = "none";
       document.getElementById("aciling_lifes").style.display = "none";
       document.getElementById("aciling_name").style.display = "none";
       document.getElementById("sligen_slime_type").style.display = "none";
       document.getElementById("change_sligen_efect").style.display = "none";
+      document.getElementById("mintow_name").style.display = "none";
+      document.getElementById("mintow_life").style.display = "none";
 
       if (Object.keys(drones).length > 0)
       {
@@ -2173,6 +2290,7 @@ canvas.addEventListener("mousedown", function(event)
             document.getElementById("build_spool").style.display = "block";
             document.getElementById("build_evocham").style.display = "block";
             document.getElementById("build_sligen").style.display = "block";
+            document.getElementById("build_mintow").style.display = "block";
             document.getElementById("minerals_name").style.display = "none" 
             document.getElementById("minerals_kapacita").style.display = "none";
             sounds.dron_select.play();
@@ -2246,6 +2364,14 @@ canvas.addEventListener("mousedown", function(event)
             document.getElementById("sligen_slime_type").style.display = "block";
             document.getElementById("sligen_slime_type").textContent = "Slime type:" + structure.type_slime;
             document.getElementById("change_sligen_efect").style.display = "block";
+          }
+          else if (structure.type == "mintow")
+          {
+            structure.am_I_selected = 1;
+            select[structure.id] = structure.type;
+            document.getElementById("mintow_name").style.display = "block";
+            document.getElementById("mintow_life").style.display = "block";
+            document.getElementById("mintow_life").textContent = "Lifes:" + structure.life;
           }
         }
       }
@@ -2565,6 +2691,16 @@ if (pauza == 0)
       case "t":
         new_sligen();
         break;
+      case "p":
+        if (pauza == 0)
+        {
+          pauza = 1;
+        }
+        else
+        {
+          pauza = 0;
+        }
+        break;
       case "ArrowRight":
         keys.right = 0;
         break;
@@ -2793,6 +2929,25 @@ function new_sligen()
   }
 }/*}}}*/
 
+function new_mintow()
+{/*{{{*/
+  if (mineralky >= 125 && Object.values(select).length >= 1)
+  {  
+    let dron = Object.values(select)[0];
+    dron.building = 1;
+    dron.building_thing = "mintow";
+    building = "moitow";
+    ukol = "building";
+  }
+  else
+  {
+    document.getElementById("no_minerals").style.display = "block";
+    setTimeout(() => {
+    document.getElementById("no_minerals").style.display = "none";
+    },3500);
+  }
+}/*}}}*/
+
 function build(x,y,type)
 {/*{{{*/
   if (type == "spawn_pool")
@@ -2822,6 +2977,16 @@ function build(x,y,type)
     structure.life = 400;
     structure.x = x;
     structure.y = y;
+  }
+  else if (type == "mintow")
+  {    
+    mineralky -= 100;
+    structure = new Structure();
+    structure.type = type;
+    structure.life = 250;
+    structure.x = x;
+    structure.y = y;
+    number_of_mintow += 1;
   }
 }/*}}}*/
 
@@ -3141,6 +3306,21 @@ function rush_call()
   }
 }/*}}}*/
 
+function stop_all_sounds()
+{/*{{{*/
+  Object.values(sounds).forEach(sound => {
+    sound.pause();
+  });
+}/*}}}*/
+
+function get_minerals()
+{/*{{{*/
+  if (number_of_mintow > 0 && pauza != 1)
+  {
+    mineralky += (5 * number_of_mintow)
+  }
+}/*}}}*/
+
 //buttons code
 /*{{{*/
 
@@ -3182,7 +3362,7 @@ document.getElementById("more_damega").addEventListener("click", function() {
     }
 });
 
-//defend tower
+//slime generator
 document.getElementById("build_sligen").addEventListener("click", function() {
   new_sligen();
 });
@@ -3240,12 +3420,20 @@ document.getElementById("pause").addEventListener("click" ,function() {
   if (pauza == 0)
   {
     pauza = 1;
+    stop_all_sounds();  
   }
   else
   {
     pauza = 0;
   }
 });
+
+//build mining tower
+document.getElementById("build_mintow").addEventListener("click", function() {
+  new_mintow();
+});
+
+
 /*}}}*/
 
 //dolble click select

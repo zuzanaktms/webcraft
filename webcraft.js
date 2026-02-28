@@ -1170,7 +1170,7 @@ if (this.type == "spawn_pool")/*{{{*/
       if (this.type == "mintow")/*{{{*/
       {
         ctx.save();
-        ctx.translate(this.x,this.y);
+        ctx.translate((this.x - screen_x),(this.y - screen_y));
         if (this.stadium < 50)
         {
           if (this.stadium == 5 || this.stadium == 15 || this.stadium == 25 || this.stadium == 35 || this.stadium == 45)
@@ -1624,7 +1624,7 @@ class Dron
             this.move(this.my_mineral.x,90);
             break;
           case "building":    
-            build((this.x - screen_x),(this.y - screen_y),this.building_thing);
+            build(this.x,this.y,this.building_thing);
             if (this.am_I_selected == 1)
             {
               document.getElementById("build_spool").style.display = "none";
@@ -2230,8 +2230,8 @@ function check_can_call_rush()
 canvas.addEventListener("mousedown", function(event)
 {
   const rect = canvas.getBoundingClientRect();
-  const x_click = event.clientX - rect.left;
-  const y_click = event.clientY - rect.top;
+  let x_click = event.clientX - rect.left;
+  let y_click = event.clientY - rect.top;
   if (ukol == "none")
 {//{{{
     if (mousebutton(event) == 0) {
@@ -2403,7 +2403,9 @@ canvas.addEventListener("mousedown", function(event)
     }
   }//}}}
   else if (ukol == "building")
-  {
+  { 
+    x_click += screen_x;
+    y_click += screen_y;
     let mozno = true;
     for (let dron of Object.values(drones))
     {
@@ -2458,8 +2460,8 @@ canvas.addEventListener("mousedown", function(event)
         {
           dron.building = 0;
           dron.work = "building";
-          dron.move((x_click - screen_x),(y_click - screen_y));
-          delete select[dron.id];
+          dron.move(x_click,y_click);
+          delete select[dron.id]
 
          let sound = Math.floor(Math.random()*2);
          if (sound == 1)
@@ -2739,11 +2741,11 @@ if (pauza == 0)
 
 function move_the_screen()
 {/*{{{*/
-  if (keys.right == 1 && (screen_x + 5 ) >= 0)
+  if (keys.left == 1 && (screen_x + 5 ) >= 0)
   {
     screen_x -= 5;
   }
-  if (keys.left == 1 && (screen_x - 5) <= 500)
+  if (keys.right == 1 && (screen_x - 5) <= 500)
   {
     screen_x += 5;
   }

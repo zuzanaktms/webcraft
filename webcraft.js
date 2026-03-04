@@ -562,6 +562,7 @@ class Unit
         const xd = this.x_cil - this.x;
         const yd = this.y_cil - this.y;
         const d = Math.sqrt(xd*xd + yd*yd);
+        if (d <= 3) return;
         if (d <= this.speed && this.type != "aciling")
         {
           if (this.figth == 0)
@@ -673,6 +674,8 @@ class Unit
     this.type = "aciling";
     this.life = 60;
     this.speed = 4;
+    this.x = this.x;
+    this.y = this.y;
   }/*}}}*/
 
   detect_enemy()
@@ -2933,7 +2936,7 @@ function new_sligen()
 
 function new_mintow()
 {/*{{{*/
-  if (mineralky >= 125 && Object.values(select).length >= 1)
+  if (mineralky >= 100 && Object.values(select).length >= 1)
   {  
     let dron = Object.values(select)[0];
     dron.building = 1;

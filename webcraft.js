@@ -1273,12 +1273,19 @@ if (this.type == "spawn_pool")/*{{{*/
   }//}}}
 
   build_units()
-  {//i{{{
+  {//{{{
     if (this.queue.length)
     {
       document.getElementById("ukazatel_casu").textContent = `Building: ${this.queue[0]}`;
 
-      ++this.progress;
+      if (something_is_building >= 1)
+      {
+        ++this.progress;
+      }
+      else
+      {
+        this.progress = 0;
+      }
       if (build_length[this.queue[0]] <= this.progress)
       {
         if (supply > supplied) 
@@ -1286,6 +1293,7 @@ if (this.type == "spawn_pool")/*{{{*/
           switch (this.queue[0])
           {
           case "dron":
+            something_is_building -= 1
             supplied += 1; 
             sounds.dron_wake_up.play();
             let dron = new Dron();
@@ -1301,6 +1309,7 @@ if (this.type == "spawn_pool")/*{{{*/
             main_house.building = "none";      
             break;
           case "zergling":
+            something_is_building -= 1;
             supplied += 1; 
             let zergling = new Unit();
             zergling.velikost = 25;
@@ -1927,6 +1936,7 @@ let can_build_aciling = 0;
 let lenght_of_drones = 0;
 let pauza = 0;
 let number_of_mintow = 0;
+let something_is_building = 0;
 /*}}}*/
 
 //drones made and position 
@@ -2130,6 +2140,10 @@ function akce()
         }
       }
     }
+    if (select.hasOwnProperty(main_house.id) && something_is_building != 0)
+    {
+      document.getElementById("cancel_building").style.display = "block" 
+    }
     move_the_screen();
     draw();
   }
@@ -2323,7 +2337,10 @@ canvas.addEventListener("mousedown", function(event)
             document.getElementById("new_drone_button").style.display = "block"; 
             document.getElementById("zergling_button").style.display = "block";
             document.getElementById("more_supply_button").style.display = "block";
-            document.getElementById("ukazatel_velikosti_units").style.display = "block";
+            if (something_is_building >= 1)
+            {
+              document.getElementById("ukazatel_velikosti_units").style.display = "block";
+            }
             document.getElementById("ukazatel_velikosti_upradges").style.display = "block";
             structure.am_I_selected = 1;
             break;
@@ -2509,13 +2526,13 @@ canvas.addEventListener("mouseup", function(event)
         
         //am I go to the minerals?
         for (let mineral of Object.values(minerals)) {
-          if (distance(mineral.x,mineral.y,x,y,100)) {
+          if (distance((mineral.x - screen_x),(mineral.y - screen_y),x,y,100)) {
             kliknuto = 1;
             trg_mineral = mineral;
             break;
           }
         }
-        if (distance(655,300,x,y,100)) {
+        if (distance((655 - screen_x),(300 - screen_y),x,y,100)) {
           kliknuto = 1;
           break;
         }
@@ -2706,6 +2723,24 @@ if (pauza == 0)
           pauza = 0;
         }
         break;
+      case "x":
+        new_mintow();
+        break;
+      case "c":
+        if (select.hasOwnProperty(main_house.id))
+        {
+          if (select.hasOwnProperty(main_house.id))
+          {
+            something_is_building -= 1;
+            main_house.queue.pop();  
+            if (main_house.queue.length == 0)
+            {
+              main_house.progress = 0;
+              document.getElementById("ukazatel_velikosti_units").style.display = " none";
+              document.getElementById("cancel_building").style.display = " none";
+            }
+          }  
+        }
       case "ArrowRight":
         keys.right = 0;
         break;
@@ -2768,6 +2803,7 @@ function new_dron()
   {
     mineralky -= 50;
     main_house.queue.push("dron");
+    something_is_building += 1;
     document.getElementById("ukazatel_casu").style.display = "block";
     document.getElementById("ukazatel_velikosti_units").style.display = "block";
   }
@@ -3027,6 +3063,7 @@ function new_zergling()
   {
     mineralky -= 50;
     main_house.queue.push("zergling");
+    something_is_building += 1;
     document.getElementById("ukazatel_casu").style.display = "block";
     document.getElementById("ukazatel_velikosti_units").style.display = "block";
   }
@@ -3146,10 +3183,10 @@ document.addEventListener("mouseup", function(event)
   else if (moousedown = true)
   {
     mousedown = false;
-    maxX = Math.max(x_select_start, end_select_x);
-    maxY = Math.max(y_select_start, end_select_y);
-    minX = Math.min(x_select_start, end_select_x);
-    minY = Math.min(y_select_start, end_select_y);
+    maxX = Math.max((x_select_start + screen_x), (end_select_x + screen_x));
+    maxY = Math.max((y_select_start + screen_y), (end_select_y + screen_y));
+    minX = Math.min((x_select_start + screen_x), (end_select_x + screen_x));
+    minY = Math.min((y_select_start + screen_y), (end_select_y + screen_y));
     for (let dron of Object.values(drones))
     {
       if (dron.x > minX && dron.x < maxX && dron.y > minY && dron.y < maxY)
@@ -3344,7 +3381,7 @@ document.getElementById("more_supply_button").addEventListener("click", function
   new_supply_chamber();
 });
 
-//zergling
+//zergling 
 document.getElementById("zergling_button").addEventListener("click", function() {
   new_zergling();
 });
@@ -3438,6 +3475,20 @@ document.getElementById("build_mintow").addEventListener("click", function() {
   new_mintow();
 });
 
+//cancel building
+document.getElementById("cancel_building").addEventListener("click", function() {
+  if (select.hasOwnProperty(main_house.id))
+  {
+    something_is_building -= 1;
+    main_house.queue.pop();  
+    if (main_house.queue.length == 0)
+    {
+      main_house.progress = 0;
+      document.getElementById("ukazatel_velikosti_units").style.display = " none";
+      document.getElementById("cancel_building").style.display = " none";
+    }
+  }
+});
 
 /*}}}*/
 

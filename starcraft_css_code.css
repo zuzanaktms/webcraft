@@ -245,3 +245,18 @@ body {
 #build_mintow:hover {
   background-color:#5b5b5b;
 }
+
+#cancel_building {
+  background-color:#ffffff;
+  color:black;
+  padding:10px 10px;
+  font-size:15px;
+  border:2px solid black;
+  border-radius:6px;
+  cursor:pointer;
+  transition: background-color 0.3s;
+}
+
+#cancel_building:hover {
+  background-color:#5b5b5b;
+}

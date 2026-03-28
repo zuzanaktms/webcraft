@@ -1,3 +1,59 @@
+//class obstacle 
+class Prekazka/*{{{*/
+{
+  constructor()
+  {/*{{{*/
+    this.x = 0;
+    this.y = 0;
+    this.type = 0;
+    this.id = g_id++;
+    obstancles[this.id] = this;
+    this.scale = Math.random() - 0.1;
+  }/*}}}*/
+
+  draw()
+  {/*{{{*/
+    ctx.save();
+    ctx.translate((this.x - screen_x),(this.y - screen_y));
+    ctx.scale(this.scale,this.scale);
+    if (this.type == 1)
+    {
+      //kamen
+      ctx.beginPath();
+      ctx.moveTo(-30,0);
+      ctx.lineTo(-17,9);
+      ctx.lineTo(-5,33);
+      ctx.lineTo(1,22);
+      ctx.lineTo(28,20);
+      ctx.lineTo(29,0);
+      ctx.lineTo(34,-4);
+      ctx.lineTo(30,-15);
+      ctx.lineTo(10,-13);
+      ctx.lineTo(-2,-25);
+      ctx.lineTo(-10,-20);
+      ctx.lineTo(-8,-7);
+      ctx.lineTo(-27,-6);
+      ctx.lineTo(-18,-8);
+      ctx.lineTo(-30,0);
+      ctx.closePath();
+      ctx.fillStyle = "#4F351D"
+      ctx.fill();
+      ctx.stroke();
+    }
+    else if (this.type == 2)
+    {
+      //strom
+      ctx.beginPath();
+      ctx.arc(0, 12, 20, 0,2 * Math.PI);
+      ctx.fillStyle = "green";
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }/*}}}*/
+
+}/*}}}*/
+
 //class shoot 
 class Shoot/*{{{*/
 {
@@ -1473,6 +1529,7 @@ class Dron
     this.y_cil = this.y;
     this.type = "dron";
     this.building_thing = "none";
+    this.arm_move = 0;
  }//}}}
 
   draw()
@@ -1889,6 +1946,7 @@ let structures = {};
 let select = {};
 let shoots = {};
 let keys = {};
+let obstancles = {};
 
 let enemy_units = {};
 
@@ -1937,6 +1995,7 @@ let lenght_of_drones = 0;
 let pauza = 0;
 let number_of_mintow = 0;
 let something_is_building = 0;
+let number_of_obstancles = 0;
 /*}}}*/
 
 //drones made and position 
@@ -1992,6 +2051,20 @@ for (let dron of Object.values(drones))
   dron.move(trg_mineral.x,90);
 }
 //}}}
+
+//make obstancles
+/*{{{*/
+
+number_of_obstancles = Math.floor(Math.random() * 76) + 100
+
+for (let i = 0;i < number_of_obstancles;i++)
+{
+  let obstancle = new Prekazka();
+  obstancle.x = Math.floor(Math.random()*1545);
+  obstancle.y = Math.floor(Math.random()*1080);
+  obstancle.type = Math.floor(Math.random()*2) +1;
+}
+/*}}}*/
 
 function akce()
 /*{{{*/
@@ -2144,6 +2217,11 @@ function akce()
     {
       document.getElementById("cancel_building").style.display = "block" 
     }
+    if (document.getElementById("drone_name").style.display == "block")
+    {
+      document.getElementById("minerals_name").style.display = "none"
+      document.getElementById("minerals_kapacita").style.display = "none"
+    }
     move_the_screen();
     draw();
   }
@@ -2177,6 +2255,13 @@ function draw()
     {
       draw_sligen_slime(structure.x,structure.y,structure.id);
     }
+  }  
+  for (let obstancle of Object.values(obstancles))
+  {
+    if (obstancle.type == 1)
+    {
+      obstancle.draw();
+    }
   }
   for (let shoot of Object.values(shoots))
   {
@@ -2189,6 +2274,13 @@ function draw()
   for (let dron of Object.values(drones))
   {
     dron.draw();
+  }
+  for (let obstancle of Object.values(obstancles))
+  {
+    if (obstancle.type == 2)
+    {
+      obstancle.draw();
+    }
   }   
   for (let mineral of Object.values(minerals))
   {
@@ -2781,19 +2873,19 @@ function move_the_screen()
 {/*{{{*/
   if (keys.left == 1 && (screen_x + 5 ) >= 0)
   {
-    screen_x -= 5;
+    screen_x -= 10;
   }
   if (keys.right == 1 && (screen_x - 5) <= 500)
   {
-    screen_x += 5;
+    screen_x += 10;
   }
   if (keys.up == 1 && (screen_y + 5) >= 0)
   {
-    screen_y -= 5;
+    screen_y -= 10;
   }
   if (keys.down == 1 && (screen_y - 5) <= 500)
   {
-    screen_y += 5;
+    screen_y += 10;
   }
 }/*}}}*/
 
@@ -3480,13 +3572,22 @@ document.getElementById("cancel_building").addEventListener("click", function() 
   if (select.hasOwnProperty(main_house.id))
   {
     something_is_building -= 1;
-    main_house.queue.pop();  
+    let poped_unit = main_house.queue.pop();  
+    if (poped_unit == 'dron')
+    {
+      mineralky += 50;
+    }
+    else if (poped_unit == 'zergling')
+    {
+      mineralky += 50;
+    }
     if (main_house.queue.length == 0)
     {
       main_house.progress = 0;
       document.getElementById("ukazatel_velikosti_units").style.display = " none";
       document.getElementById("cancel_building").style.display = " none";
     }
+    console.log(poped_unit);
   }
 });
 
